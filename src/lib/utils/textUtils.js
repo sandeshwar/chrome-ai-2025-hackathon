@@ -59,11 +59,4 @@ export function extractPageText(documentRef) {
   return text.slice(0, 20000);
 }
 
-/** Simple fallback summarizer: pick first few sentences. */
-export function fallbackSummarize(text, maxSentences = 5) {
-  const sentences = text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return sentences.slice(0, maxSentences).join(' ');
-}
+// AI-only summarization – no non-AI fallback per product requirements

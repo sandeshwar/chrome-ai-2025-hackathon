@@ -85,6 +85,62 @@
   white-space: pre-wrap;
 }
 
+/* Translation block */
+.chrome-ai-translate {
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #dfe6e9;
+}
+
+.chrome-ai-translate__title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.chrome-ai-translate__controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chrome-ai-translate__select {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #dfe6e9;
+  background: #ffffff;
+  color: #2c3e50;
+}
+
+.chrome-ai-translate__btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #3498db;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.chrome-ai-translate__btn:hover { background: #2d86c7; }
+.chrome-ai-translate__btn:active { transform: translateY(1px); }
+.chrome-ai-translate__btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.35); }
+
+.chrome-ai-translate__body {
+  font-size: 13px;
+  color: #2c3e50;
+  white-space: pre-wrap;
+}
+
+.chrome-ai-translate__body.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .chrome-ai-mock-menu__summary-body.loading {
   display: flex;
   align-items: center;
@@ -107,25 +163,41 @@
 }
 
 .chrome-ai-mock-menu__item {
-  background-color: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #dfe6e9;
-  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: #3498db;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
 }
 
 .chrome-ai-mock-menu__item-title {
   font-weight: 600;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .chrome-ai-mock-menu__item-description {
   font-size: 13px;
-  color: #7f8c8d;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .chrome-ai-fab-container * {
   box-sizing: border-box;
+}
+
+.chrome-ai-mock-menu__item:hover {
+  background-color: #2d86c7;
+}
+
+.chrome-ai-mock-menu__item:active {
+  transform: translateY(1px);
+}
+
+.chrome-ai-mock-menu__item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.35);
 }

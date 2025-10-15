@@ -1,4 +1,12 @@
-import { buildMenuElement, upsertSummaryBlock, upsertSummaryLoading } from '../utils/componentUtils.js';
+import {
+  buildMenuElement,
+  upsertSummaryBlock,
+  upsertSummaryLoading,
+  upsertTranslationBlock,
+  setTranslationLanguages,
+  setTranslationLoading,
+  setTranslationText,
+} from '../utils/componentUtils.js';
 
 /** Mock menu view wrapper. */
 export class MockMenu {
@@ -34,6 +42,18 @@ export class MockMenu {
       const id = li.getAttribute('data-item-id');
       if (id) handler(id);
     });
+
+    this.container.addEventListener('keydown', (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const li = target.closest('.chrome-ai-mock-menu__item');
+      if (!li) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const id = li.getAttribute('data-item-id');
+        if (id) handler(id);
+      }
+    });
   }
 
   /** Show or update a summary section inside the menu. */
@@ -46,6 +66,45 @@ export class MockMenu {
   setSummaryLoading(label) {
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     upsertSummaryLoading(createElement, this.container, String(label ?? ''));
+  }
+
+  /** Ensure translation UI exists and populate languages. */
+  showTranslationUI(languages) {
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const block = upsertTranslationBlock(createElement, this.container);
+    setTranslationLanguages(block, languages);
+    return block;
+  }
+
+  /** Read the currently selected target language label. */
+  getSelectedLanguage() {
+    const select = this.container.querySelector('.chrome-ai-translate__select');
+    return select ? select.value : '';
+    }
+
+  /** Register handler for Translate button (replaces previous). */
+  onTranslate(handler) {
+    const btn = this.container.querySelector('.chrome-ai-translate__btn');
+    if (!btn) return;
+    if (this._translateHandler) btn.removeEventListener('click', this._translateHandler);
+    this._translateHandler = (e) => {
+      e.preventDefault();
+      if (typeof handler === 'function') handler(this.getSelectedLanguage());
+    };
+    btn.addEventListener('click', this._translateHandler);
+  }
+
+  /** Show spinner in translation body. */
+  setTranslationLoading(label) {
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const block = setTranslationLoading(createElement, this.container, String(label ?? ''));
+    return block;
+  }
+
+  /** Set translation output text. */
+  setTranslation(text) {
+    const block = this.container.querySelector('.chrome-ai-translate');
+    if (block) setTranslationText(block, String(text ?? ''));
   }
 
   /** Show menu. */

@@ -19,7 +19,7 @@ export const createFabButtonElement = (createButton, { label, ariaLabel }) =>
 export const createMenuItemElement = (createElement, item) => {
   const listItem = createElement('li', {
     classNames: ['chrome-ai-mock-menu__item'],
-    attributes: { role: 'menuitem', 'data-item-id': item.id },
+    attributes: { role: 'menuitem', 'data-item-id': item.id, tabindex: '0' },
   });
 
   const title = createElement('span', { classNames: ['chrome-ai-mock-menu__item-title'], textContent: item.title });
@@ -108,4 +108,58 @@ export const upsertSummaryLoading = (createElement, container, label) => {
     body.append(spinner, text);
   }
   return block;
+};
+
+/**
+ * Translation UI helpers
+ */
+export const upsertTranslationBlock = (createElement, container) => {
+  let block = container.querySelector('.chrome-ai-translate');
+  if (!block) {
+    block = createElement('section', { classNames: ['chrome-ai-translate'] });
+    const header = createElement('div', { classNames: ['chrome-ai-translate__title'], textContent: 'Translate' });
+    const controls = createElement('div', { classNames: ['chrome-ai-translate__controls'] });
+    const select = createElement('select', { classNames: ['chrome-ai-translate__select'], attributes: { 'aria-label': 'Target language' } });
+    const btn = createElement('button', { classNames: ['chrome-ai-translate__btn'], attributes: { type: 'button' }, textContent: 'Translate' });
+    const body = createElement('div', { classNames: ['chrome-ai-translate__body'] });
+    controls.append(select, btn);
+    block.append(header, controls, body);
+    const firstChild = container.firstElementChild;
+    if (firstChild) container.insertBefore(block, firstChild.nextSibling);
+    else container.append(block);
+  }
+  return block;
+};
+
+export const setTranslationLanguages = (container, languages) => {
+  const select = container.querySelector('.chrome-ai-translate__select');
+  if (!select) return;
+  select.innerHTML = '';
+  languages.forEach(({ code, label }) => {
+    const opt = document.createElement('option');
+    opt.value = label || code;
+    opt.textContent = label || code;
+    select.appendChild(opt);
+  });
+};
+
+export const setTranslationLoading = (createElement, container, label) => {
+  const block = upsertTranslationBlock(createElement, container);
+  const body = block.querySelector('.chrome-ai-translate__body');
+  if (body) {
+    body.classList.add('loading');
+    body.textContent = '';
+    const spinner = createElement('span', { classNames: ['chrome-ai-spinner'], attributes: { 'aria-hidden': 'true' } });
+    const text = createElement('span', { classNames: ['chrome-ai-spinner__label'], textContent: label });
+    body.append(spinner, text);
+  }
+  return block;
+};
+
+export const setTranslationText = (container, text) => {
+  const body = container.querySelector('.chrome-ai-translate__body');
+  if (body) {
+    body.classList.remove('loading');
+    body.textContent = String(text || '');
+  }
 };

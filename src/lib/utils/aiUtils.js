@@ -1,31 +1,56 @@
 /**
- * Lightweight wrapper around Chrome's preview AI Text API (window.ai).
+ * Lightweight wrapper around Chrome's built-in Summarizer API.
  */
 
 /** @returns {Promise<"no"|"readily"|"after-download">} */
 export async function canCreateTextSession() {
+  console.log('[AI Utils] Checking Summarizer API availability...');
+  
+  // Check if Summarizer API is available
+  if (typeof window.Summarizer?.availability === 'function') {
+    console.log('[AI Utils] Summarizer.availability found');
+    try {
+      const availability = await window.Summarizer.availability();
+      console.log('[AI Utils] Summarizer API available with status:', availability);
+      
+      // Map availability to expected return values
+      if (availability === 'unavailable') return 'no';
+      if (availability === 'readily') return 'readily';
+      return 'after-download'; // for 'download-needed' or other states
+    } catch (e) {
+      console.log('[AI Utils] Error checking Summarizer availability:', e);
+      return 'no';
+    }
+  }
+  
+  // If not available, try checking via background script injection
+  console.log('[AI Utils] Checking via background script injection...');
   try {
-    const fn = globalThis.ai?.canCreateTextSession;
-    if (!fn) return 'no';
-    return await fn();
-  } catch {
+    const response = await chrome.runtime.sendMessage({ type: 'check-ai-availability' });
+    console.log('[AI Utils] Background script AI check result:', response?.result);
+    return response?.result || 'no';
+  } catch (e) {
+    console.log('[AI Utils] Background script AI check failed:', e);
     return 'no';
   }
 }
 
 /**
- * @param {{systemPrompt?: string, temperature?: number, topK?: number}} [opts]
+ * @param {{type?: string, format?: string, length?: string, sharedContext?: string}} [opts]
  * @returns {Promise<{prompt:(q:string)=>Promise<string>, close:()=>void}>}
  */
 export async function createTextSession(opts = {}) {
-  const { systemPrompt = 'You are a helpful assistant.', temperature = 0.2, topK = 1 } = opts;
-  const create = globalThis.ai?.createTextSession;
-  if (!create) throw new Error('AI Text API not available');
-  const session = await create({ systemPrompt, temperature, topK });
-  return {
-    prompt: (q) => session.prompt(q),
-    close: () => (typeof session.destroy === 'function' ? session.destroy() : undefined),
-  };
+  const { type = 'key-points', format = 'markdown', length = 'medium', sharedContext = '' } = opts;
+  
+  if (window.Summarizer?.create) {
+    const summarizer = await window.Summarizer.create({ type, format, length, sharedContext });
+    return {
+      prompt: (text) => summarizer.summarize(text),
+      close: () => (typeof summarizer.destroy === 'function' ? summarizer.destroy() : undefined),
+    };
+  }
+  
+  throw new Error('Summarizer API not available - window.Summarizer.create not found');
 }
 
 /**
@@ -53,4 +78,3 @@ export async function summarize(text, opts = {}) {
     session.close();
   }
 }
-

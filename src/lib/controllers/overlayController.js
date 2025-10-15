@@ -1,5 +1,7 @@
 import { createOverlayContainer, isEventOutside } from '../utils/overlayUtils.js';
 import { summarizeCurrentPageWithProgress } from '../business/summarizationService.js';
+import { translateCurrentPageWithProgress } from '../business/translationService.js';
+import { LANGUAGES } from '../utils/i18nUtils.js';
 
 /** Orchestrates FAB + menu mounting and interactions. */
 export class OverlayController {
@@ -70,9 +72,46 @@ export class OverlayController {
         this.menu.setSummary(summary);
         if (!this.menu.isVisible()) this.menu.show();
         this.button.setActive(true);
-      } catch {
-        this.menu.setSummary('Failed to summarize this page.');
+      } catch (e) {
+        let message = 'Unable to summarize this page.';
+        const code = e && e.code;
+        if (code === 'ai-unavailable') {
+          message = 'AI summarization is not available in this Chrome build.';
+        } else if (code === 'no-content') {
+          message = 'No readable content found on this page.';
+        } else if (code === 'empty-summary') {
+          message = 'The model returned an empty summary.';
+        } else if (code === 'inference-failed') {
+          message = 'AI summarization failed. Please try again.';
+        }
+        this.menu.setSummary(message);
       }
+    }
+    if (id === 'translate') {
+      // Show translate UI and attach handler once
+      this.menu.showTranslationUI(LANGUAGES);
+      if (!this.menu.isVisible()) this.menu.show();
+      this.button.setActive(true);
+      this.menu.onTranslate(async (targetLabel) => {
+        try {
+          this.menu.setTranslationLoading('Preparing model…');
+          const translated = await translateCurrentPageWithProgress(document, targetLabel, (phase) => {
+            if (phase === 'download_start') this.menu.setTranslationLoading('Downloading model…');
+            if (phase === 'download_complete') this.menu.setTranslationLoading('Model ready. Translating…');
+            if (phase === 'inference_start') this.menu.setTranslationLoading('Translating…');
+          });
+          this.menu.setTranslation(translated);
+        } catch (e) {
+          let message = 'Unable to translate this page.';
+          const code = e && e.code;
+          if (code === 'ai-unavailable') message = 'AI translation is not available in this Chrome build.';
+          else if (code === 'no-content') message = 'No readable content found on this page.';
+          else if (code === 'invalid-language') message = 'Please select a target language.';
+          else if (code === 'empty-translation') message = 'The model returned an empty translation.';
+          else if (code === 'inference-failed') message = 'AI translation failed. Please try again.';
+          this.menu.setTranslation(message);
+        }
+      });
     }
   }
 
