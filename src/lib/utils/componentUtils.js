@@ -59,6 +59,24 @@ export const createMenuHeader = (createElement) => {
 /**
  * @param {(tag:string, opts?: any)=>HTMLElement} createElement
  */
+export const createBackHeader = (createElement, title, onBack) => {
+  const header = createElement('header', { classNames: ['chrome-ai-mock-menu__back-header'] });
+  const backBtn = createElement('button', { 
+    classNames: ['chrome-ai-mock-menu__back-btn'],
+    attributes: { type: 'button', 'aria-label': 'Go back' }
+  });
+  const backIcon = createElement('i', { classNames: ['fas', 'fa-arrow-left'], attributes: { 'aria-hidden': 'true' } });
+  backBtn.appendChild(backIcon);
+  backBtn.addEventListener('click', onBack);
+  
+  const titleSpan = createElement('span', { classNames: ['chrome-ai-mock-menu__back-title'], textContent: title });
+  header.append(backBtn, titleSpan);
+  return header;
+};
+
+/**
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ */
 export const createMenuList = (createElement) => createElement('ul', { classNames: ['chrome-ai-mock-menu__list'] });
 
 /**
@@ -83,35 +101,59 @@ export const buildMenuElement = (createElement, menuItems) => {
  * @param {string} text
  * @returns {HTMLElement}
  */
-export const upsertSummaryBlock = (createElement, container, text) => {
-  let block = container.querySelector('.chrome-ai-mock-menu__summary');
-  if (!block) {
-    block = createElement('section', {
-      classNames: ['chrome-ai-mock-menu__summary'],
-      attributes: { role: 'region', 'aria-live': 'polite' },
-    });
-    const header = createElement('div', {
-      classNames: ['chrome-ai-mock-menu__summary-title'],
-    });
-    const icon = createElement('i', { classNames: ['fas', 'fa-file-lines'], attributes: { 'aria-hidden': 'true' } });
-    const title = createElement('span', { textContent: 'Summary' });
-    header.append(icon, title);
-    const body = createElement('div', { classNames: ['chrome-ai-mock-menu__summary-body'] });
-    block.append(header, body);
-    // Insert below header
-    const firstChild = container.firstElementChild;
-    if (firstChild) {
-      container.insertBefore(block, firstChild.nextSibling);
-    } else {
-      container.append(block);
-    }
-  }
-  const body = block.querySelector('.chrome-ai-mock-menu__summary-body');
+/**
+ * Create a full-screen summary view.
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ * @param {HTMLElement} container
+ * @param {string} text
+ * @param {Function} onBack
+ * @returns {HTMLElement}
+ */
+export const createSummaryView = (createElement, container, text, onBack) => {
+  // Clear existing content
+  container.innerHTML = '';
+  
+  // Add back header
+  const header = createBackHeader(createElement, 'Summary', onBack);
+  container.appendChild(header);
+  
+  // Create scrollable content area
+  const content = createElement('div', { classNames: ['chrome-ai-mock-menu__content'] });
+  const body = createElement('div', { classNames: ['chrome-ai-mock-menu__summary-body-full'], textContent: text });
+  content.appendChild(body);
+  container.appendChild(content);
+  
+  return container;
+};
+
+/**
+ * Update summary view with new text.
+ * @param {HTMLElement} container
+ * @param {string} text
+ */
+export const updateSummaryView = (container, text) => {
+  const body = container.querySelector('.chrome-ai-mock-menu__summary-body-full');
   if (body) {
     body.classList.remove('loading');
     body.textContent = text;
   }
-  return block;
+};
+
+/**
+ * Show loading state in summary view.
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ * @param {HTMLElement} container
+ * @param {string} label
+ */
+export const showSummaryLoading = (createElement, container, label) => {
+  const body = container.querySelector('.chrome-ai-mock-menu__summary-body-full');
+  if (body) {
+    body.classList.add('loading');
+    body.textContent = '';
+    const spinner = createElement('span', { classNames: ['chrome-ai-spinner'], attributes: { 'aria-hidden': 'true' } });
+    const text = createElement('span', { classNames: ['chrome-ai-spinner__label'], textContent: label });
+    body.append(spinner, text);
+  }
 };
 
 /** Ensure summary block exists and show a spinner + label. */
@@ -129,27 +171,88 @@ export const upsertSummaryLoading = (createElement, container, label) => {
 };
 
 /**
- * Translation UI helpers
+ * Create a full-screen translation view.
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ * @param {HTMLElement} container
+ * @param {Array} languages
+ * @param {Function} onBack
+ * @param {Function} onTranslate
+ * @returns {HTMLElement}
  */
-export const upsertTranslationBlock = (createElement, container) => {
-  let block = container.querySelector('.chrome-ai-translate');
-  if (!block) {
-    block = createElement('section', { classNames: ['chrome-ai-translate'] });
-    const header = createElement('div', { classNames: ['chrome-ai-translate__title'] });
-    const icon = createElement('i', { classNames: ['fas', 'fa-language'], attributes: { 'aria-hidden': 'true' } });
-    const title = createElement('span', { textContent: 'Translate' });
-    header.append(icon, title);
-    const controls = createElement('div', { classNames: ['chrome-ai-translate__controls'] });
-    const select = createElement('select', { classNames: ['chrome-ai-translate__select'], attributes: { 'aria-label': 'Target language' } });
-    const btn = createElement('button', { classNames: ['chrome-ai-translate__btn'], attributes: { type: 'button' }, textContent: 'Translate' });
-    const body = createElement('div', { classNames: ['chrome-ai-translate__body'] });
-    controls.append(select, btn);
-    block.append(header, controls, body);
-    const firstChild = container.firstElementChild;
-    if (firstChild) container.insertBefore(block, firstChild.nextSibling);
-    else container.append(block);
+export const createTranslationView = (createElement, container, languages, onBack, onTranslate) => {
+  // Clear existing content
+  container.innerHTML = '';
+  
+  // Add back header
+  const header = createBackHeader(createElement, 'Translate', onBack);
+  container.appendChild(header);
+  
+  // Create scrollable content area
+  const content = createElement('div', { classNames: ['chrome-ai-mock-menu__content'] });
+  
+  // Create translation controls
+  const controls = createElement('div', { classNames: ['chrome-ai-translate__controls-full'] });
+  const select = createElement('select', { classNames: ['chrome-ai-translate__select-full'], attributes: { 'aria-label': 'Target language' } });
+  const btn = createElement('button', { 
+    classNames: ['chrome-ai-translate__btn-full'], 
+    attributes: { type: 'button' }, 
+    textContent: 'Translate' 
+  });
+  
+  // Populate language options
+  languages.forEach(({ code, label }) => {
+    const opt = document.createElement('option');
+    opt.value = label || code;
+    opt.textContent = label || code;
+    select.appendChild(opt);
+  });
+  
+  // Add translate button handler
+  btn.addEventListener('click', () => {
+    const selectedLang = select.value;
+    onTranslate(selectedLang);
+  });
+  
+  controls.append(select, btn);
+  content.appendChild(controls);
+  
+  // Create translation body
+  const body = createElement('div', { classNames: ['chrome-ai-translate__body-full'] });
+  content.appendChild(body);
+  
+  container.appendChild(content);
+  
+  return container;
+};
+
+/**
+ * Update translation view with result text.
+ * @param {HTMLElement} container
+ * @param {string} text
+ */
+export const updateTranslationView = (container, text) => {
+  const body = container.querySelector('.chrome-ai-translate__body-full');
+  if (body) {
+    body.classList.remove('loading');
+    body.textContent = text;
   }
-  return block;
+};
+
+/**
+ * Show loading state in translation view.
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ * @param {HTMLElement} container
+ * @param {string} label
+ */
+export const showTranslationLoading = (createElement, container, label) => {
+  const body = container.querySelector('.chrome-ai-translate__body-full');
+  if (body) {
+    body.classList.add('loading');
+    body.textContent = '';
+    const spinner = createElement('span', { classNames: ['chrome-ai-spinner'], attributes: { 'aria-hidden': 'true' } });
+    const text = createElement('span', { classNames: ['chrome-ai-spinner__label'], textContent: label });
+    body.append(spinner, text);
+  }
 };
 
 export const setTranslationLanguages = (container, languages) => {

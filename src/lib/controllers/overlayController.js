@@ -58,20 +58,22 @@ export class OverlayController {
     }
   }
 
-  /** Handle menu item selections. */
+  /** Handle menu item selections with mobile-style navigation. */
   async handleMenuSelect(id) {
     if (id === 'summary') {
       try {
-        // Show initial pre-flight while we check model readiness
+        // Navigate to summary view and show initial loading
+        this.menu.showSummaryView('');
         this.menu.setSummaryLoading('Preparing model…');
+        if (!this.menu.isVisible()) this.menu.show();
+        this.button.setActive(true);
+        
         const summary = await summarizeCurrentPageWithProgress(document, (phase) => {
           if (phase === 'download_start') this.menu.setSummaryLoading('Downloading model…');
           if (phase === 'download_complete') this.menu.setSummaryLoading('Model ready. Summarizing…');
           if (phase === 'inference_start') this.menu.setSummaryLoading('Summarizing…');
         });
         this.menu.setSummary(summary);
-        if (!this.menu.isVisible()) this.menu.show();
-        this.button.setActive(true);
       } catch (e) {
         let message = 'Unable to summarize this page.';
         const code = e && e.code;
@@ -88,11 +90,8 @@ export class OverlayController {
       }
     }
     if (id === 'translate') {
-      // Show translate UI and attach handler once
-      this.menu.showTranslationUI(LANGUAGES);
-      if (!this.menu.isVisible()) this.menu.show();
-      this.button.setActive(true);
-      this.menu.onTranslate(async (targetLabel) => {
+      // Navigate to translation view
+      this.menu.showTranslationView(LANGUAGES, async (targetLabel) => {
         try {
           this.menu.setTranslationLoading('Preparing model…');
           const translated = await translateCurrentPageWithProgress(document, targetLabel, (phase) => {
@@ -112,6 +111,9 @@ export class OverlayController {
           this.menu.setTranslation(message);
         }
       });
+      
+      if (!this.menu.isVisible()) this.menu.show();
+      this.button.setActive(true);
     }
   }
 
