@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Chrome AI FAB Overlay",
+  "description": "Overlay a floating action button that opens a mock AI assistant menu on every website.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "64": "icons/icon64.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    },
+    "default_title": "Chrome AI FAB Overlay"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content/loader.js"
+      ],
+      "css": [
+        "src/content/styles/overlay.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+  ,
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/bootstrap.js",
+        "src/lib/**/*.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
