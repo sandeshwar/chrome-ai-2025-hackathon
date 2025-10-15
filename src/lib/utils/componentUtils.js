@@ -8,7 +8,7 @@ export const createFabButtonElement = (createButton, { label, ariaLabel }) =>
   createButton({
     classNames: ['chrome-ai-fab-button'],
     attributes: { type: 'button', 'aria-label': ariaLabel, 'aria-pressed': 'false' },
-    textContent: label,
+    innerHTML: label,
   });
 
 /**
@@ -22,9 +22,20 @@ export const createMenuItemElement = (createElement, item) => {
     attributes: { role: 'menuitem', 'data-item-id': item.id, tabindex: '0' },
   });
 
-  const title = createElement('span', { classNames: ['chrome-ai-mock-menu__item-title'], textContent: item.title });
-  const description = createElement('span', { classNames: ['chrome-ai-mock-menu__item-description'], textContent: item.description });
-  listItem.append(title, description);
+  const iconMap = {
+    'summary': 'fa-file-lines',
+    'translate': 'fa-language'
+  };
+
+  const icon = createElement('i', { 
+    classNames: ['fas', iconMap[item.id] || 'fa-circle'], 
+    attributes: { 'aria-hidden': 'true' } 
+  });
+  
+  const title = createElement('span', { classNames: ['chrome-ai-mock-menu__item-title'] });
+  title.append(icon, createElement('span', { textContent: item.title }));
+  
+  listItem.appendChild(title);
   return listItem;
 };
 
@@ -37,8 +48,13 @@ export const createMenuContainer = (createElement) =>
 /**
  * @param {(tag:string, opts?: any)=>HTMLElement} createElement
  */
-export const createMenuHeader = (createElement) =>
-  createElement('header', { classNames: ['chrome-ai-mock-menu__title'], textContent: 'AI Assistant' });
+export const createMenuHeader = (createElement) => {
+  const header = createElement('header', { classNames: ['chrome-ai-mock-menu__title'] });
+  const icon = createElement('i', { classNames: ['fas', 'fa-sparkles'], attributes: { 'aria-hidden': 'true' } });
+  const title = createElement('span', { textContent: 'AI Assistant' });
+  header.append(icon, title);
+  return header;
+};
 
 /**
  * @param {(tag:string, opts?: any)=>HTMLElement} createElement
@@ -76,8 +92,10 @@ export const upsertSummaryBlock = (createElement, container, text) => {
     });
     const header = createElement('div', {
       classNames: ['chrome-ai-mock-menu__summary-title'],
-      textContent: 'Summary',
     });
+    const icon = createElement('i', { classNames: ['fas', 'fa-file-lines'], attributes: { 'aria-hidden': 'true' } });
+    const title = createElement('span', { textContent: 'Summary' });
+    header.append(icon, title);
     const body = createElement('div', { classNames: ['chrome-ai-mock-menu__summary-body'] });
     block.append(header, body);
     // Insert below header
@@ -117,7 +135,10 @@ export const upsertTranslationBlock = (createElement, container) => {
   let block = container.querySelector('.chrome-ai-translate');
   if (!block) {
     block = createElement('section', { classNames: ['chrome-ai-translate'] });
-    const header = createElement('div', { classNames: ['chrome-ai-translate__title'], textContent: 'Translate' });
+    const header = createElement('div', { classNames: ['chrome-ai-translate__title'] });
+    const icon = createElement('i', { classNames: ['fas', 'fa-language'], attributes: { 'aria-hidden': 'true' } });
+    const title = createElement('span', { textContent: 'Translate' });
+    header.append(icon, title);
     const controls = createElement('div', { classNames: ['chrome-ai-translate__controls'] });
     const select = createElement('select', { classNames: ['chrome-ai-translate__select'], attributes: { 'aria-label': 'Target language' } });
     const btn = createElement('button', { classNames: ['chrome-ai-translate__btn'], attributes: { type: 'button' }, textContent: 'Translate' });

@@ -7,6 +7,18 @@ import { OverlayController } from '../lib/controllers/overlayController.js';
 import { injectionGuard } from '../lib/util/injectionGuard.js';
 import { getDocumentRoot, shouldBootstrap, buildOverlay } from '../lib/utils/appUtils.js';
 
+/** Inject Font Awesome CSS */
+function injectFontAwesome(documentRef) {
+  const fontAwesomeId = 'chrome-ai-fontawesome';
+  if (documentRef.getElementById(fontAwesomeId)) return;
+  
+  const link = documentRef.createElement('link');
+  link.id = fontAwesomeId;
+  link.rel = 'stylesheet';
+  link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+  documentRef.head.appendChild(link);
+}
+
 class OverlayBootstrapper {
   constructor(documentRef) {
     if (!documentRef) throw new Error('OverlayBootstrapper requires a document reference.');
@@ -14,6 +26,7 @@ class OverlayBootstrapper {
   }
 
   run() {
+    injectFontAwesome(this.documentRef);
     const root = getDocumentRoot(this.documentRef);
     if (!shouldBootstrap(root, injectionGuard)) return;
     const { controller } = buildOverlay({

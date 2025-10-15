@@ -11,8 +11,8 @@ export class FloatingActionButton {
 
     this.domFactory = domFactory;
     this.stateCoordinator = stateCoordinator;
-    this.label = config.label ?? '✨';
-    this.ariaLabel = config.ariaLabel ?? 'Toggle assistant';
+    this.label = config.label ?? '<i class="fas fa-robot"></i>';
+    this.ariaLabel = config.ariaLabel ?? 'Toggle AI assistant';
     this.button = this.#buildButton();
   }
 

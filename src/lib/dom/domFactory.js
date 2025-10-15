@@ -14,7 +14,7 @@ export class DomFactory {
 
   /**
    * @param {string} tagName
-   * @param {{classNames?: string[], attributes?: Record<string,string>, textContent?: string}} [options]
+   * @param {{classNames?: string[], attributes?: Record<string,string>, textContent?: string, innerHTML?: string}} [options]
    * @returns {HTMLElement}
    */
   createElement(tagName, options) {
@@ -22,7 +22,7 @@ export class DomFactory {
   }
 
   /**
-   * @param {{classNames?: string[], attributes?: Record<string,string>, textContent?: string}} [options]
+   * @param {{classNames?: string[], attributes?: Record<string,string>, textContent?: string, innerHTML?: string}} [options]
    * @returns {HTMLButtonElement}
    */
   createButton(options) {
