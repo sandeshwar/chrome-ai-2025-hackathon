@@ -5,6 +5,7 @@ import {
   createMenuItemElement,
   createSummaryView,
   createTranslationView,
+  createChatView,
   showSummaryLoading,
   showTranslationLoading,
   updateSummaryView,
@@ -24,10 +25,11 @@ export class MockMenu {
     this.stateCoordinator = stateCoordinator;
     this.items = Array.isArray(items) ? items : [];
     this.visible = false;
-    this.currentView = 'menu'; // 'menu', 'summary', 'translation'
+    this.currentView = 'menu'; // 'menu', 'summary', 'translation', 'chat'
     this._selectHandler = null;
     this._clickHandler = null;
     this._keydownHandler = null;
+    this._chatView = null; // Store chat view reference
     
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this.container = buildMenuElement(createElement, this.items);
@@ -173,6 +175,78 @@ export class MockMenu {
   setTranslation(text) {
     if (this.currentView === 'translation') {
       updateTranslationView(this.container, String(text ?? ''));
+    }
+  }
+
+  /** Show chat view */
+  showChatView(onSendMessage) {
+    this.currentView = 'chat';
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    this._chatView = createChatView(createElement, this.container, () => this.showMenu(), onSendMessage);
+  }
+
+  /** Add message to chat */
+  addChatMessage(role, content, isStreaming = false) {
+    if (this._chatView && this.currentView === 'chat') {
+      return this._chatView.addMessage(role, content, isStreaming);
+    }
+    return null;
+  }
+
+  /** Update streaming message */
+  updateStreamingChatMessage(messageElement, chunk) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.updateStreamingMessage(messageElement, chunk);
+    }
+  }
+
+  /** Stop streaming message */
+  stopStreamingChatMessage(messageElement) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.stopStreaming(messageElement);
+    }
+  }
+
+  /** Show typing indicator */
+  showChatTypingIndicator() {
+    if (this._chatView && this.currentView === 'chat') {
+      return this._chatView.showTypingIndicator();
+    }
+    return null;
+  }
+
+  /** Remove typing indicator */
+  removeChatTypingIndicator(typingElement) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.removeTypingIndicator(typingElement);
+    }
+  }
+
+  /** Show suggested questions */
+  showChatSuggestions(suggestions, onSelect) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.showSuggestions(suggestions, onSelect);
+    }
+  }
+
+  /** Clear all chat messages */
+  clearChatMessages() {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.clearMessages();
+    }
+  }
+
+  /** Set send button state */
+  setChatSendButtonState(disabled) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.setSendButtonState(disabled);
+    }
+  }
+
+  /** Focus chat input */
+  focusChatInput() {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.messageInput.focus();
     }
   }
 

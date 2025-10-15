@@ -1,6 +1,7 @@
 import { createOverlayContainer, isEventOutside } from '../utils/overlayUtils.js';
 import { summarizeCurrentPageWithProgress } from '../business/summarizationService.js';
 import { translateCurrentPageWithProgress } from '../business/translationService.js';
+import { sendChatMessageStreaming, getSuggestedQuestions, canChat } from '../business/chatService.js';
 import { LANGUAGES } from '../utils/i18nUtils.js';
 
 /** Orchestrates FAB + menu mounting and interactions. */
@@ -16,6 +17,9 @@ export class OverlayController {
     this.domFactory = domFactory;
     this.button = button;
     this.menu = menu;
+    this.chatHistory = []; // Store chat history
+    this.currentStreamingMessage = null; // Current streaming message element
+    this.currentTypingIndicator = null; // Current typing indicator
     this.container = null;
     this.initialized = false;
     this.handleToggle = this.handleToggle.bind(this);
@@ -116,6 +120,106 @@ export class OverlayController {
       
       if (!this.menu.isVisible()) this.menu.show();
       this.button.setActive(true);
+    }
+    if (id === 'chat') {
+      try {
+        // Navigate to chat view
+        this.menu.showChatView(async (message) => {
+          await this.handleChatMessage(message);
+        });
+        
+        if (!this.menu.isVisible()) this.menu.show();
+        this.button.setActive(true);
+        
+        // Load suggested questions
+        try {
+          const suggestions = await getSuggestedQuestions(document, () => {});
+          this.menu.showChatSuggestions(suggestions, (suggestion) => {
+            this.handleChatMessage(suggestion);
+          });
+        } catch (e) {
+          // Fallback suggestions if generation fails
+          const fallbackSuggestions = [
+            'What is this page about?',
+            'Can you explain the main points?',
+            'What should I take away from this?'
+          ];
+          this.menu.showChatSuggestions(fallbackSuggestions, (suggestion) => {
+            this.handleChatMessage(suggestion);
+          });
+        }
+        
+        // Focus input for better UX
+        this.menu.focusChatInput();
+      } catch (e) {
+        let message = 'Unable to open chat.';
+        const code = e && e.code;
+        if (code === 'ai-unavailable') message = 'AI chat is not available in this Chrome build.';
+        this.menu.addChatMessage('assistant', message);
+      }
+    }
+  }
+
+  /** Handle chat message with streaming response */
+  async handleChatMessage(message) {
+    try {
+      // Add user message
+      this.menu.addChatMessage('user', message);
+      this.chatHistory.push({ role: 'user', content: message });
+      
+      // Disable input and show typing
+      this.menu.setChatSendButtonState(true);
+      this.currentTypingIndicator = this.menu.showChatTypingIndicator();
+      
+      // Create AbortController for stopping
+      const abortController = new AbortController();
+      
+      // Start streaming response
+      this.currentStreamingMessage = this.menu.addChatMessage('assistant', '', true);
+      
+      let fullResponse = '';
+      await sendChatMessageStreaming(
+        document,
+        message,
+        this.chatHistory,
+        () => {},
+        (chunk) => {
+          fullResponse += chunk;
+          this.menu.updateStreamingChatMessage(this.currentStreamingMessage, chunk);
+        },
+        abortController.signal
+      );
+      
+      // Clean up
+      this.menu.stopStreamingChatMessage(this.currentStreamingMessage);
+      this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+      this.menu.setChatSendButtonState(false);
+      
+      // Add to history
+      this.chatHistory.push({ role: 'assistant', content: fullResponse });
+      
+      // Keep history manageable (last 10 messages)
+      if (this.chatHistory.length > 10) {
+        this.chatHistory = this.chatHistory.slice(-10);
+      }
+      
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        // User stopped generation
+        this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+        this.menu.setChatSendButtonState(false);
+        return;
+      }
+      
+      let errorMessage = 'Sorry, I encountered an error.';
+      const code = e && e.code;
+      if (code === 'ai-unavailable') errorMessage = 'AI chat is not available in this Chrome build.';
+      else if (code === 'no-content') errorMessage = 'No readable content found on this page.';
+      else if (code === 'inference-failed') errorMessage = 'AI chat failed. Please try again.';
+      
+      this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+      this.menu.addChatMessage('assistant', errorMessage);
+      this.menu.setChatSendButtonState(false);
     }
   }
 

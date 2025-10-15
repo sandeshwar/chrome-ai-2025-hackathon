@@ -1,3 +1,5 @@
+import { safeRenderMarkdown, hasMarkdown } from './markdownUtils.js';
+
 /**
  * Build the floating action button element.
  * @param {(opts?: any)=>HTMLButtonElement} createButton
@@ -286,4 +288,223 @@ export const setTranslationText = (container, text) => {
     body.classList.remove('loading');
     body.textContent = String(text || '');
   }
+};
+
+/**
+ * Create a full-screen chat view
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ * @param {HTMLElement} container
+ * @param {() => void} onBack
+ * @param {Function} onSendMessage
+ */
+export const createChatView = (createElement, container, onBack, onSendMessage) => {
+  container.innerHTML = '';
+  container.className = 'chrome-ai-mock-menu chrome-ai-mock-menu--visible';
+  
+  // Create back header
+  const header = createBackHeader(createElement, 'AI Chat', onBack);
+  
+  // Create chat container
+  const chatContainer = createElement('div', { 
+    classNames: ['chrome-ai-chat-container'] 
+  });
+  
+  // Messages area
+  const messagesArea = createElement('div', { 
+    classNames: ['chrome-ai-chat-messages'] 
+  });
+  
+  // Input area
+  const inputArea = createElement('div', { 
+    classNames: ['chrome-ai-chat-input-area'] 
+  });
+  
+  const inputWrapper = createElement('div', { 
+    classNames: ['chrome-ai-chat-input-wrapper'] 
+  });
+  
+  const messageInput = createElement('textarea', {
+    classNames: ['chrome-ai-chat-input'],
+    attributes: { 
+      placeholder: 'Ask about this page...',
+      rows: '1',
+      maxlength: '1000'
+    }
+  });
+  
+  const sendButton = createElement('button', {
+    classNames: ['chrome-ai-chat-send'],
+    attributes: { type: 'button', 'aria-label': 'Send message' },
+    textContent: 'Send'
+  });
+  
+  inputWrapper.append(messageInput, sendButton);
+  inputArea.appendChild(inputWrapper);
+  
+  chatContainer.append(messagesArea, inputArea);
+  container.append(header, chatContainer);
+  
+  // Auto-resize textarea
+  messageInput.addEventListener('input', () => {
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+  });
+  
+  // Handle send button
+  const handleSend = () => {
+    const message = messageInput.value.trim();
+    if (message && onSendMessage) {
+      onSendMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+  };
+  
+  sendButton.addEventListener('click', handleSend);
+  messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+  
+  return {
+    container,
+    messagesArea,
+    messageInput,
+    sendButton,
+    addMessage: (role, content, isStreaming = false) => {
+      const messageDiv = createElement('div', { 
+        classNames: ['chrome-ai-chat-message', `chrome-ai-chat-message--${role}`] 
+      });
+      
+      const messageContent = createElement('div', { 
+        classNames: ['chrome-ai-chat-message-content'] 
+      });
+      
+      if (isStreaming) {
+        messageContent.classList.add('chrome-ai-chat-message-content--streaming');
+        messageContent.textContent = content;
+      } else {
+        // Render markdown for assistant messages
+        if (role === 'assistant' && hasMarkdown(content)) {
+          messageContent.innerHTML = safeRenderMarkdown(content);
+        } else {
+          messageContent.textContent = content;
+        }
+      }
+      
+      messageDiv.appendChild(messageContent);
+      messagesArea.appendChild(messageDiv);
+      
+      // Auto-scroll to bottom only for new messages
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+      
+      return messageContent;
+    },
+    updateStreamingMessage: (messageElement, chunk) => {
+      if (messageElement) {
+        // Store scroll position before update
+        const wasAtBottom = messagesArea.scrollHeight - messagesArea.scrollTop <= messagesArea.clientHeight + 10;
+        
+        // For streaming, we need to accumulate text and then render markdown
+        const currentContent = messageElement.textContent || '';
+        const newContent = currentContent + chunk;
+        
+        // Try to render markdown, fallback to text if incomplete
+        try {
+          if (hasMarkdown(newContent)) {
+            messageElement.innerHTML = safeRenderMarkdown(newContent);
+          } else {
+            messageElement.textContent = newContent;
+          }
+        } catch (e) {
+          // Fallback to plain text if markdown parsing fails
+          messageElement.textContent = newContent;
+        }
+        
+        // Only auto-scroll if user was at bottom (allowing manual scrolling)
+        if (wasAtBottom) {
+          messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+      }
+    },
+    stopStreaming: (messageElement) => {
+      if (messageElement) {
+        messageElement.classList.remove('chrome-ai-chat-message-content--streaming');
+      }
+    },
+    showTypingIndicator: () => {
+      const typingDiv = createElement('div', { 
+        classNames: ['chrome-ai-chat-typing'] 
+      });
+      
+      const dots = createElement('div', { 
+        classNames: ['chrome-ai-chat-typing-dots'] 
+      });
+      
+      for (let i = 0; i < 3; i++) {
+        const dot = createElement('span', { 
+          classNames: ['chrome-ai-chat-typing-dot'] 
+        });
+        dots.appendChild(dot);
+      }
+      
+      typingDiv.appendChild(dots);
+      messagesArea.appendChild(typingDiv);
+      
+      // Auto-scroll to bottom for typing indicator
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+      
+      return typingDiv;
+    },
+    removeTypingIndicator: (typingElement) => {
+      if (typingElement && typingElement.parentNode) {
+        typingElement.parentNode.removeChild(typingElement);
+      }
+    },
+    showSuggestions: (suggestions, onSelect) => {
+      // Clear existing suggestions
+      const existingSuggestions = container.querySelector('.chrome-ai-chat-suggestions');
+      if (existingSuggestions) {
+        existingSuggestions.remove();
+      }
+      
+      const suggestionsContainer = createElement('div', { 
+        classNames: ['chrome-ai-chat-suggestions'] 
+      });
+      
+      suggestions.forEach(suggestion => {
+        const suggestionBtn = createElement('button', {
+          classNames: ['chrome-ai-chat-suggestion'],
+          attributes: { type: 'button' },
+          textContent: suggestion
+        });
+        
+        suggestionBtn.addEventListener('click', () => {
+          messageInput.value = suggestion;
+          messageInput.focus();
+          if (onSelect) onSelect(suggestion);
+        });
+        
+        suggestionsContainer.appendChild(suggestionBtn);
+      });
+      
+      messagesArea.appendChild(suggestionsContainer);
+      
+      // Auto-scroll to bottom for suggestions
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    },
+    clearMessages: () => {
+      messagesArea.innerHTML = '';
+    },
+    setSendButtonState: (disabled) => {
+      sendButton.disabled = disabled;
+      if (disabled) {
+        sendButton.textContent = '...';
+      } else {
+        sendButton.textContent = 'Send';
+      }
+    }
+  };
 };
