@@ -202,8 +202,8 @@ export const createTranslationView = (createElement, container, languages, onBac
   // Populate language options
   languages.forEach(({ code, label }) => {
     const opt = document.createElement('option');
-    opt.value = label || code;
-    opt.textContent = label || code;
+    opt.value = code; // Use language code as value
+    opt.textContent = label || code; // Use label as display text
     select.appendChild(opt);
   });
   

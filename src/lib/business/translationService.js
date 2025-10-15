@@ -1,5 +1,6 @@
 import { createTranslator, canCreateTranslator } from '../utils/translatorUtils.js';
 import { extractPageText } from '../utils/textUtils.js';
+import { detectLanguageWithProgress, canDetectLanguage, getLanguageName } from '../utils/languageDetectorUtils.js';
 
 // Map common language names to BCP 47 codes
 function mapLanguageToCode(labelOrCode) {
@@ -14,8 +15,9 @@ function mapLanguageToCode(labelOrCode) {
     'italiano': 'it',
     'portuguese': 'pt',
     'português': 'pt',
-    'chinese': 'zh',
-    '中文': 'zh',
+    'chinese': 'zh-CN',
+    '中文': 'zh-CN',
+    'zh': 'zh-CN',
     'japanese': 'ja',
     '日本語': 'ja',
     'korean': 'ko',
@@ -93,7 +95,7 @@ export async function translateCurrentPage(documentRef, targetLanguageLabel, sou
  * Throws coded errors on failure.
  * @param {Document} documentRef
  * @param {string} targetLanguageLabel
- * @param {(phase:'download_start'|'download_complete'|'inference_start'|'inference_complete')=>void} [onProgress]
+ * @param {(phase:'download_start'|'download_complete'|'inference_start'|'inference_complete'|'detection_start')=>void} [onProgress]
  */
 export async function translateCurrentPageWithProgress(documentRef, targetLanguageLabel, onProgress) {
   const content = extractPageText(documentRef);
@@ -104,7 +106,6 @@ export async function translateCurrentPageWithProgress(documentRef, targetLangua
   }
 
   const targetLanguage = mapLanguageToCode(targetLanguageLabel);
-  const sourceLanguage = mapLanguageToCode('en') || 'en';
   
   if (!targetLanguage) {
     const err = new Error('Invalid target language.');
@@ -112,9 +113,33 @@ export async function translateCurrentPageWithProgress(documentRef, targetLangua
     throw err;
   }
 
+  // Auto-detect source language
+  let sourceLanguage = 'en'; // fallback to English
+  try {
+    onProgress?.('detection_start');
+    const detectionResult = await detectLanguageWithProgress(content.slice(0, 1000), onProgress);
+    
+    // Only use detected language if confidence is reasonable (>0.5)
+    if (detectionResult.confidence > 0.5) {
+      sourceLanguage = detectionResult.detectedLanguage;
+      console.log(`[Translation] Detected source language: ${getLanguageName(sourceLanguage)} (${detectionResult.confidence.toFixed(2)})`);
+    } else {
+      console.log(`[Translation] Low confidence detection (${detectionResult.confidence.toFixed(2)}), using English as fallback`);
+    }
+  } catch (e) {
+    console.log('[Translation] Language detection failed, using English as fallback:', e.message);
+  }
+
+  // If detected language is the same as target, no translation needed
+  if (sourceLanguage === targetLanguage) {
+    const err = new Error(`Content is already in ${getLanguageName(targetLanguage)}.`);
+    err.code = 'same-language';
+    throw err;
+  }
+
   const status = await canCreateTranslator(sourceLanguage, targetLanguage);
   if (status === 'no') {
-    const err = new Error('Translation is not available.');
+    const err = new Error('Translation is not available for this language pair.');
     err.code = 'ai-unavailable';
     throw err;
   }

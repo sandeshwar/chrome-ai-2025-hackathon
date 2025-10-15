@@ -93,8 +93,9 @@ export class OverlayController {
       // Navigate to translation view
       this.menu.showTranslationView(LANGUAGES, async (targetLabel) => {
         try {
-          this.menu.setTranslationLoading('Preparing model…');
+          this.menu.setTranslationLoading('Detecting language…');
           const translated = await translateCurrentPageWithProgress(document, targetLabel, (phase) => {
+            if (phase === 'detection_start') this.menu.setTranslationLoading('Detecting language…');
             if (phase === 'download_start') this.menu.setTranslationLoading('Downloading model…');
             if (phase === 'download_complete') this.menu.setTranslationLoading('Model ready. Translating…');
             if (phase === 'inference_start') this.menu.setTranslationLoading('Translating…');
@@ -106,6 +107,7 @@ export class OverlayController {
           if (code === 'ai-unavailable') message = 'AI translation is not available in this Chrome build.';
           else if (code === 'no-content') message = 'No readable content found on this page.';
           else if (code === 'invalid-language') message = 'Please select a target language.';
+          else if (code === 'same-language') message = e.message;
           else if (code === 'empty-translation') message = 'The model returned an empty translation.';
           else if (code === 'inference-failed') message = 'AI translation failed. Please try again.';
           this.menu.setTranslation(message);

@@ -8,7 +8,7 @@ export const LANGUAGES = [
   { code: 'it', label: 'Italian' },
   { code: 'ja', label: 'Japanese' },
   { code: 'ko', label: 'Korean' },
-  { code: 'zh', label: 'Chinese (Simplified)' },
+  { code: 'zh-CN', label: 'Chinese (Simplified)' },
   { code: 'hi', label: 'Hindi' },
   { code: 'ar', label: 'Arabic' },
   { code: 'ru', label: 'Russian' },
