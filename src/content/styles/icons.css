@@ -1,0 +1,108 @@
+/* Custom SVG Icons for Chrome AI Extension */
+
+.chrome-ai-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  fill: currentColor;
+  transition: all 0.2s ease;
+}
+
+/* Robot icon for FAB */
+.chrome-ai-icon--robot {
+  width: 20px;
+  height: 20px;
+}
+
+/* Sparkles icon for header */
+.chrome-ai-icon--sparkles {
+  width: 12px;
+  height: 12px;
+}
+
+/* File lines icon for summary */
+.chrome-ai-icon--file-lines {
+  width: 16px;
+  height: 16px;
+}
+
+/* Language icon for translate */
+.chrome-ai-icon--language {
+  width: 16px;
+  height: 16px;
+}
+
+/* Arrow left icon for back button */
+.chrome-ai-icon--arrow-left {
+  width: 18px;
+  height: 18px;
+}
+
+/* Icon sizing in different contexts */
+.chrome-ai-fab-button .chrome-ai-icon--robot {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.chrome-ai-fab-button:hover .chrome-ai-icon--robot {
+  transform: scale(1.05);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.chrome-ai-fab-button--active .chrome-ai-icon--robot {
+  filter: drop-shadow(0 1px 3px rgba(59, 130, 246, 0.3));
+}
+
+.chrome-ai-mock-menu__title .chrome-ai-icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+}
+
+.chrome-ai-mock-menu__item-title .chrome-ai-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 2px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.chrome-ai-mock-menu__item:hover .chrome-ai-icon {
+  opacity: 1;
+}
+
+.chrome-ai-mock-menu__back-btn .chrome-ai-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.chrome-ai-mock-menu__back-btn:hover .chrome-ai-icon {
+  transform: translateX(-1px);
+}
+
+.chrome-ai-mock-menu__summary-title .chrome-ai-icon,
+.chrome-ai-translate__title .chrome-ai-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .chrome-ai-icon {
+    filter: brightness(1.1);
+  }
+  
+  .chrome-ai-fab-button .chrome-ai-icon--robot {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) brightness(1.1);
+  }
+  
+  .chrome-ai-fab-button:hover .chrome-ai-icon--robot {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) brightness(1.15);
+  }
+}
+
+

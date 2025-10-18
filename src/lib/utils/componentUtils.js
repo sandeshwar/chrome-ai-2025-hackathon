@@ -1,4 +1,5 @@
 import { safeRenderMarkdown, hasMarkdown } from './markdownUtils.js';
+import { createIcon, getIconType } from './iconUtils.js';
 
 /**
  * Build the floating action button element.
@@ -25,14 +26,14 @@ export const createMenuItemElement = (createElement, item) => {
   });
 
   const iconMap = {
-    'summary': 'fa-file-lines',
-    'translate': 'fa-language'
+    'idea': 'idea',
+    'summary': 'file-lines',
+    'chat': 'chat',
+    'translate': 'language'
   };
 
-  const icon = createElement('i', { 
-    classNames: ['fas', iconMap[item.id] || 'fa-circle'], 
-    attributes: { 'aria-hidden': 'true' } 
-  });
+  const iconType = iconMap[item.id] || 'circle';
+  const icon = createIcon(iconType);
   
   const title = createElement('span', { classNames: ['chrome-ai-mock-menu__item-title'] });
   title.append(icon, createElement('span', { textContent: item.title }));
@@ -52,7 +53,7 @@ export const createMenuContainer = (createElement) =>
  */
 export const createMenuHeader = (createElement) => {
   const header = createElement('header', { classNames: ['chrome-ai-mock-menu__title'] });
-  const icon = createElement('i', { classNames: ['fas', 'fa-sparkles'], attributes: { 'aria-hidden': 'true' } });
+  const icon = createIcon('sparkles');
   const title = createElement('span', { textContent: 'AI Assistant' });
   header.append(icon, title);
   return header;
@@ -67,7 +68,7 @@ export const createBackHeader = (createElement, title, onBack) => {
     classNames: ['chrome-ai-mock-menu__back-btn'],
     attributes: { type: 'button', 'aria-label': 'Go back' }
   });
-  const backIcon = createElement('i', { classNames: ['fas', 'fa-arrow-left'], attributes: { 'aria-hidden': 'true' } });
+  const backIcon = createIcon('arrow-left');
   backBtn.appendChild(backIcon);
   backBtn.addEventListener('click', onBack);
   

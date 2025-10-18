@@ -1,4 +1,5 @@
-/* Clean Minimal Container */
+/* Custom SVG Icons */
+@import url('./icons.css');
 .chrome-ai-fab-container {
   position: fixed;
   bottom: 24px;
@@ -9,6 +10,12 @@
   gap: 16px;
   z-index: 2147483643;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  pointer-events: none;
+}
+
+.chrome-ai-fab-button,
+.chrome-ai-mock-menu {
+  pointer-events: auto;
 }
 
 /* Clean FAB Button */
@@ -72,6 +79,17 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+.chrome-ai-fab-container .chrome-ai-mock-menu {
+  margin-right: 8px;
+  max-width: calc(100vw - 48px);
+}
+
+@media (max-width: 420px) {
+  .chrome-ai-fab-container .chrome-ai-mock-menu {
+    width: auto;
+  }
 }
 
 /* View transitions */

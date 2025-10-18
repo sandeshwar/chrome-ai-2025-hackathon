@@ -1,4 +1,5 @@
 import { createFabButtonElement } from '../utils/componentUtils.js';
+import { createIcon } from '../utils/iconUtils.js';
 
 /** Floating action button wrapper. */
 export class FloatingActionButton {
@@ -11,7 +12,10 @@ export class FloatingActionButton {
 
     this.domFactory = domFactory;
     this.stateCoordinator = stateCoordinator;
-    this.label = config.label ?? '<i class="fas fa-robot"></i>';
+    
+    // Create custom robot icon instead of Font Awesome
+    const robotIcon = createIcon('robot');
+    this.label = config.label ?? robotIcon.outerHTML;
     this.ariaLabel = config.ariaLabel ?? 'Toggle AI assistant';
     this.button = this.#buildButton();
   }

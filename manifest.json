@@ -36,7 +36,8 @@
         "src/content/loader.js"
       ],
       "css": [
-        "src/content/styles/overlay.css"
+        "src/content/styles/overlay.css",
+        "src/content/styles/icons.css"
       ],
       "run_at": "document_idle"
     }
