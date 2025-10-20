@@ -206,6 +206,13 @@ export class OverlayController {
 
   /** Handle chat message with streaming response */
   async handleChatMessage(message) {
+    const clearTypingIndicator = () => {
+      if (this.currentTypingIndicator) {
+        this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+        this.currentTypingIndicator = null;
+      }
+    };
+
     try {
       // Add user message
       this.menu.addChatMessage('user', message);
@@ -220,6 +227,7 @@ export class OverlayController {
       
       // Start streaming response
       this.currentStreamingMessage = this.menu.addChatMessage('assistant', '', true);
+      clearTypingIndicator();
       
       let fullResponse = '';
       await sendChatMessageStreaming(
@@ -236,7 +244,7 @@ export class OverlayController {
       
       // Clean up
       this.menu.stopStreamingChatMessage(this.currentStreamingMessage);
-      this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+      clearTypingIndicator();
       this.menu.setChatSendButtonState(false);
       
       // Add to history
@@ -250,7 +258,7 @@ export class OverlayController {
     } catch (e) {
       if (e.name === 'AbortError') {
         // User stopped generation
-        this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+        clearTypingIndicator();
         this.menu.setChatSendButtonState(false);
         return;
       }
@@ -261,7 +269,7 @@ export class OverlayController {
       else if (code === 'no-content') errorMessage = 'No readable content found on this page.';
       else if (code === 'inference-failed') errorMessage = 'AI chat failed. Please try again.';
       
-      this.menu.removeChatTypingIndicator(this.currentTypingIndicator);
+      clearTypingIndicator();
       this.menu.addChatMessage('assistant', errorMessage);
       this.menu.setChatSendButtonState(false);
     }

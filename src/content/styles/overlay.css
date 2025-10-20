@@ -1,5 +1,38 @@
 /* Custom SVG Icons */
 @import url('./icons.css');
+
+:root {
+  --chrome-ai-color-surface: #ffffff;
+  --chrome-ai-color-surface-muted: #f9fafb;
+  --chrome-ai-color-border: #e5e7eb;
+  --chrome-ai-color-border-strong: #d1d5db;
+  --chrome-ai-color-text: #1f2937;
+  --chrome-ai-color-text-muted: #6b7280;
+  --chrome-ai-color-text-subtle: #9ca3af;
+  --chrome-ai-color-interactive: #3b82f6;
+  --chrome-ai-color-interactive-strong: #2563eb;
+  --chrome-ai-color-interactive-active: #1d4ed8;
+  --chrome-ai-color-interactive-subtle: #eff6ff;
+  --chrome-ai-color-shadow: rgba(15, 23, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --chrome-ai-color-surface: #1f2937;
+    --chrome-ai-color-surface-muted: #111827;
+    --chrome-ai-color-border: #374151;
+    --chrome-ai-color-border-strong: #4b5563;
+    --chrome-ai-color-text: #f9fafb;
+    --chrome-ai-color-text-muted: #9ca3af;
+    --chrome-ai-color-text-subtle: #6b7280;
+    --chrome-ai-color-interactive: #60a5fa;
+    --chrome-ai-color-interactive-strong: #3b82f6;
+    --chrome-ai-color-interactive-active: #2563eb;
+    --chrome-ai-color-interactive-subtle: rgba(96, 165, 250, 0.15);
+    --chrome-ai-color-shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
 .chrome-ai-fab-container {
   position: fixed;
   bottom: 24px;
@@ -23,38 +56,38 @@
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background-color: #ffffff;
-  color: #374151;
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
   font-size: 18px;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--chrome-ai-color-shadow);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .chrome-ai-fab-button:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: var(--chrome-ai-color-surface-muted);
+  border-color: var(--chrome-ai-color-border-strong);
+  box-shadow: 0 4px 6px var(--chrome-ai-color-shadow);
 }
 
 .chrome-ai-fab-button:active {
-  background-color: #f3f4f6;
+  background-color: var(--chrome-ai-color-surface-muted);
   transform: translateY(1px);
 }
 
 .chrome-ai-fab-button--active {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
+  background-color: var(--chrome-ai-color-interactive);
+  border-color: var(--chrome-ai-color-interactive);
   color: #ffffff;
 }
 
 .chrome-ai-fab-button--active:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: var(--chrome-ai-color-interactive-strong);
+  border-color: var(--chrome-ai-color-interactive-strong);
 }
 
 /* Clean Menu Container */
@@ -63,9 +96,9 @@
   height: 480px;
   padding: 0;
   border-radius: 8px;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: var(--chrome-ai-color-surface);
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  box-shadow: 0 4px 6px var(--chrome-ai-color-shadow);
   opacity: 0;
   transform: translateY(8px);
   pointer-events: none;
@@ -141,17 +174,17 @@
   font-weight: 600;
   margin: 0;
   padding: 16px 16px 12px 16px;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--chrome-ai-color-border);
   flex-shrink: 0;
 }
 
 .chrome-ai-mock-menu__title i {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
 }
 
 /* Back Header */
@@ -160,13 +193,13 @@
   font-weight: 600;
   margin: 0;
   padding: 12px 16px;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--chrome-ai-color-border);
   flex-shrink: 0;
-  background-color: #ffffff;
+  background-color: var(--chrome-ai-color-surface);
 }
 
 .chrome-ai-mock-menu__back-btn {
@@ -175,7 +208,7 @@
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
-  color: #374151;
+  color: var(--chrome-ai-color-text);
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
@@ -185,12 +218,12 @@
 }
 
 .chrome-ai-mock-menu__back-btn:hover {
-  background-color: #f3f4f6;
-  color: #111827;
+  background-color: var(--chrome-ai-color-surface-muted);
+  color: var(--chrome-ai-color-text);
 }
 
 .chrome-ai-mock-menu__back-btn:active {
-  background-color: #e5e7eb;
+  background-color: var(--chrome-ai-color-border);
   transform: scale(0.95);
 }
 
@@ -206,23 +239,6 @@
 }
 
 /* Scrollable Content Area */
-.chrome-ai-mock-menu__content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.chrome-ai-mock-menu__content::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.chrome-ai-mock-menu__content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 2px;
-}
-
-.chrome-ai-mock-menu__content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
 /* Clean Menu List */
 .chrome-ai-mock-menu__list {
   margin: 0;
@@ -240,7 +256,7 @@
   padding: 10px 12px;
   border-radius: 6px;
   background-color: transparent;
-  color: #374151;
+  color: var(--chrome-ai-color-text);
   border: none;
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -249,16 +265,16 @@
 }
 
 .chrome-ai-mock-menu__item:hover {
-  background-color: #f3f4f6;
+  background-color: var(--chrome-ai-color-surface-muted);
 }
 
 .chrome-ai-mock-menu__item:active {
-  background-color: #e5e7eb;
+  background-color: var(--chrome-ai-color-border);
 }
 
 .chrome-ai-mock-menu__item-title {
   font-weight: 500;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -267,7 +283,7 @@
 
 .chrome-ai-mock-menu__item-title i {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
   width: 14px;
   text-align: center;
 }
@@ -275,14 +291,15 @@
 /* Full-screen Summary View */
 .chrome-ai-mock-menu__summary-body-full {
   font-size: 14px;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   white-space: pre-wrap;
   line-height: 1.6;
   font-weight: 400;
-  background-color: #ffffff;
+  background-color: var(--chrome-ai-color-surface);
   padding: 16px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  border: 1px solid var(--chrome-ai-color-border);
+  box-shadow: 0 1px 2px var(--chrome-ai-color-shadow);
   min-height: 200px;
 }
 
@@ -296,58 +313,61 @@
 .chrome-ai-translate__select-full {
   flex: 1;
   padding: 8px 10px;
-  border-radius: 4px;
-  border: 1px solid #d1d5db;
-  background-color: #ffffff;
-  color: #111827;
+  border-radius: 6px;
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
   font-size: 13px;
-  transition: border-color 0.15s ease;
-  min-height: 32px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 36px;
 }
 
 .chrome-ai-translate__select-full:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--chrome-ai-color-interactive);
+  box-shadow: 0 0 0 2px var(--chrome-ai-color-interactive-subtle);
 }
 
 .chrome-ai-translate__btn-full {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid #3b82f6;
-  background-color: #3b82f6;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  background-color: var(--chrome-ai-color-interactive);
   color: #ffffff;
-  font-weight: 500;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.15s ease;
-  min-height: 32px;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  min-height: 36px;
   text-transform: none;
+  box-shadow: 0 1px 2px var(--chrome-ai-color-shadow);
 }
 
 .chrome-ai-translate__btn-full:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: var(--chrome-ai-color-interactive-strong);
 }
 
 .chrome-ai-translate__btn-full:active {
-  background-color: #1d4ed8;
+  background-color: var(--chrome-ai-color-interactive-active);
+  transform: translateY(1px);
 }
 
 .chrome-ai-translate__btn-full:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--chrome-ai-color-interactive);
   outline-offset: 2px;
 }
 
 .chrome-ai-translate__body-full {
   font-size: 14px;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   white-space: pre-wrap;
   line-height: 1.6;
   font-weight: 400;
-  background-color: #ffffff;
+  background-color: var(--chrome-ai-color-surface);
   padding: 16px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  border: 1px solid var(--chrome-ai-color-border);
+  box-shadow: 0 1px 2px var(--chrome-ai-color-shadow);
   min-height: 200px;
 }
 
@@ -363,8 +383,8 @@
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface-muted);
+  border: 1px solid var(--chrome-ai-color-border);
   border-radius: 8px 8px 0 0;
 }
 
@@ -373,12 +393,11 @@
 }
 
 .chrome-ai-chat-messages::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
+  background: var(--chrome-ai-color-surface-muted);
 }
 
 .chrome-ai-chat-messages::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--chrome-ai-color-border-strong);
   border-radius: 3px;
 }
 
@@ -414,7 +433,7 @@
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content h6 {
   margin: 8px 0 4px 0;
   font-weight: 600;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content h1 { font-size: 16px; }
@@ -427,17 +446,17 @@
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content strong {
   font-weight: 600;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content em {
   font-style: italic;
-  color: #374151;
+  color: var(--chrome-ai-color-text-muted);
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content code {
-  background-color: #f3f4f6;
-  color: #d97706;
+  background-color: var(--chrome-ai-color-surface-muted);
+  color: var(--chrome-ai-color-interactive);
   padding: 2px 4px;
   border-radius: 3px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -445,8 +464,8 @@
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content pre {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--chrome-ai-color-surface-muted);
+  border: 1px solid var(--chrome-ai-color-border);
   border-radius: 6px;
   padding: 8px 12px;
   margin: 8px 0;
@@ -455,7 +474,7 @@
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content pre code {
   background: none;
-  color: #374151;
+  color: var(--chrome-ai-color-text-muted);
   padding: 0;
 }
 
@@ -467,51 +486,51 @@
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content li {
   margin: 4px 0;
-  color: #374151;
+  color: var(--chrome-ai-color-text-muted);
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content blockquote {
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid var(--chrome-ai-color-interactive);
   padding-left: 12px;
   margin: 8px 0;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
   font-style: italic;
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content a {
-  color: #3b82f6;
+  color: var(--chrome-ai-color-interactive);
   text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s ease;
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content a:hover {
-  border-bottom-color: #3b82f6;
+  border-bottom-color: var(--chrome-ai-color-interactive);
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content hr {
   border: none;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--chrome-ai-color-border);
   margin: 12px 0;
 }
 
 .chrome-ai-chat-message--user .chrome-ai-chat-message-content {
-  background-color: #3b82f6;
+  background-color: var(--chrome-ai-color-interactive);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .chrome-ai-chat-message--assistant .chrome-ai-chat-message-content {
-  background-color: #ffffff;
-  color: #111827;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
+  border: 1px solid var(--chrome-ai-color-border);
   border-bottom-left-radius: 4px;
 }
 
 .chrome-ai-chat-message-content--streaming::after {
   content: '▊';
   animation: blink 1s infinite;
-  color: #3b82f6;
+  color: var(--chrome-ai-color-interactive);
 }
 
 @keyframes blink {
@@ -526,8 +545,8 @@
 }
 
 .chrome-ai-chat-typing-dots {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface);
+  border: 1px solid var(--chrome-ai-color-border);
   border-radius: 18px;
   padding: 12px 16px;
   display: flex;
@@ -538,7 +557,7 @@
 .chrome-ai-chat-typing-dot {
   width: 8px;
   height: 8px;
-  background-color: #9ca3af;
+  background-color: var(--chrome-ai-color-text-subtle);
   border-radius: 50%;
   animation: typing-bounce 1.4s infinite ease-in-out both;
 }
@@ -563,12 +582,12 @@
 }
 
 .chrome-ai-chat-suggestion {
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  background-color: var(--chrome-ai-color-surface);
+  border: 1px solid var(--chrome-ai-color-border-strong);
   border-radius: 12px;
   padding: 8px 12px;
   font-size: 13px;
-  color: #374151;
+  color: var(--chrome-ai-color-text);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -576,15 +595,15 @@
 }
 
 .chrome-ai-chat-suggestion:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
+  background-color: var(--chrome-ai-color-interactive-subtle);
+  border-color: var(--chrome-ai-color-interactive);
   transform: translateY(-1px);
 }
 
 .chrome-ai-chat-input-area {
   padding: 16px;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface);
+  border: 1px solid var(--chrome-ai-color-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
 }
@@ -597,7 +616,7 @@
 
 .chrome-ai-chat-input {
   flex: 1;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--chrome-ai-color-border-strong);
   border-radius: 20px;
   padding: 8px 16px;
   font-size: 14px;
@@ -606,18 +625,18 @@
   min-height: 36px;
   max-height: 120px;
   font-family: inherit;
-  background-color: #f9fafb;
+  background-color: var(--chrome-ai-color-surface-muted);
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .chrome-ai-chat-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  background-color: #ffffff;
+  border-color: var(--chrome-ai-color-interactive);
+  background-color: var(--chrome-ai-color-surface);
 }
 
 .chrome-ai-chat-send {
-  background-color: #3b82f6;
+  background-color: var(--chrome-ai-color-interactive);
   color: white;
   border: none;
   border-radius: 20px;
@@ -631,15 +650,15 @@
 }
 
 .chrome-ai-chat-send:hover:not(:disabled) {
-  background-color: #2563eb;
+  background-color: var(--chrome-ai-color-interactive-strong);
 }
 
 .chrome-ai-chat-send:active:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: var(--chrome-ai-color-interactive-active);
 }
 
 .chrome-ai-chat-send:disabled {
-  background-color: #9ca3af;
+  background-color: var(--chrome-ai-color-text-subtle);
   cursor: not-allowed;
 }
 
@@ -648,14 +667,14 @@
   margin: 8px;
   padding: 12px;
   border-radius: 6px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface-muted);
+  border: 1px solid var(--chrome-ai-color-border);
 }
 
 .chrome-ai-mock-menu__summary-title {
   font-weight: 600;
   margin-bottom: 8px;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -664,12 +683,12 @@
 
 .chrome-ai-mock-menu__summary-title i {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
 }
 
 .chrome-ai-mock-menu__summary-body {
   font-size: 13px;
-  color: #374151;
+  color: var(--chrome-ai-color-text-muted);
   white-space: pre-wrap;
   line-height: 1.4;
 }
@@ -679,14 +698,14 @@
   margin: 8px;
   padding: 12px;
   border-radius: 6px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface-muted);
+  border: 1px solid var(--chrome-ai-color-border);
 }
 
 .chrome-ai-translate__title {
   font-weight: 600;
   margin-bottom: 12px;
-  color: #111827;
+  color: var(--chrome-ai-color-text);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -695,7 +714,7 @@
 
 .chrome-ai-translate__title i {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
 }
 
 .chrome-ai-translate__controls {
@@ -708,9 +727,9 @@
   flex: 1;
   padding: 8px 10px;
   border-radius: 4px;
-  border: 1px solid #d1d5db;
-  background-color: #ffffff;
-  color: #374151;
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
   font-size: 13px;
   transition: border-color 0.15s ease;
   min-height: 32px;
@@ -718,14 +737,14 @@
 
 .chrome-ai-translate__select:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--chrome-ai-color-interactive);
 }
 
 .chrome-ai-translate__btn {
   padding: 8px 12px;
   border-radius: 4px;
-  border: 1px solid #3b82f6;
-  background-color: #3b82f6;
+  border: 1px solid var(--chrome-ai-color-interactive);
+  background-color: var(--chrome-ai-color-interactive);
   color: #ffffff;
   font-weight: 500;
   font-size: 12px;
@@ -736,22 +755,22 @@
 }
 
 .chrome-ai-translate__btn:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: var(--chrome-ai-color-interactive-strong);
+  border-color: var(--chrome-ai-color-interactive-strong);
 }
 
 .chrome-ai-translate__btn:active {
-  background-color: #1d4ed8;
+  background-color: var(--chrome-ai-color-interactive-active);
 }
 
 .chrome-ai-translate__btn:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--chrome-ai-color-interactive);
   outline-offset: 2px;
 }
 
 .chrome-ai-translate__body {
   font-size: 13px;
-  color: #374151;
+  color: var(--chrome-ai-color-text-muted);
   white-space: pre-wrap;
   line-height: 1.4;
 }
@@ -763,19 +782,20 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
   font-style: italic;
   font-size: 14px;
   min-height: 200px;
-  background-color: #ffffff;
+  background-color: var(--chrome-ai-color-surface);
   padding: 16px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  border: 1px solid var(--chrome-ai-color-border);
+  box-shadow: 0 1px 2px var(--chrome-ai-color-shadow);
 }
 
 .chrome-ai-spinner__label {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
 }
 
 /* Clean Spinner */
@@ -783,8 +803,8 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid #e5e7eb;
-  border-top-color: #6b7280;
+  border: 2px solid var(--chrome-ai-color-border);
+  border-top-color: var(--chrome-ai-color-text-muted);
   animation: chrome-ai-spin 1s linear infinite;
 }
 
@@ -796,12 +816,12 @@
 
 /* Clean Focus States */
 .chrome-ai-fab-button:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--chrome-ai-color-interactive);
   outline-offset: 2px;
 }
 
 .chrome-ai-mock-menu__item:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--chrome-ai-color-interactive);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -824,9 +844,9 @@
   position: relative;
   padding: 6px 32px 6px 12px;
   border-radius: 16px;
-  border: 1px solid #d1d5db;
-  background-color: #ffffff;
-  color: #1f2937;
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -834,8 +854,8 @@
 }
 
 .chrome-ai-chat-suggestions-toggle:hover:not(:disabled) {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
+  background-color: var(--chrome-ai-color-surface-muted);
+  border-color: var(--chrome-ai-color-border-strong);
 }
 
 .chrome-ai-chat-suggestions-toggle:disabled {
@@ -858,7 +878,7 @@
   margin-top: -2px;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-top: 5px solid #1f2937;
+  border-top: 5px solid var(--chrome-ai-color-text);
   transition: transform 0.2s ease, border-top-color 0.2s ease;
 }
 
@@ -867,7 +887,7 @@
 }
 
 .chrome-ai-chat-suggestions-toggle:disabled::after {
-  border-top-color: #9ca3af;
+  border-top-color: var(--chrome-ai-color-text-subtle);
 }
 
 .chrome-ai-chat-suggestions-toggle--loading::after {
@@ -884,7 +904,7 @@
   height: 12px;
   border-radius: 50%;
   border: 2px solid rgba(148, 163, 184, 0.4);
-  border-top-color: #3b82f6;
+  border-top-color: var(--chrome-ai-color-interactive);
   display: inline-block;
   box-sizing: border-box;
   transform-origin: 50% 50%;
@@ -893,7 +913,7 @@
 
 .chrome-ai-chat-suggestions-status {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--chrome-ai-color-text-muted);
   flex: 1;
   text-align: right;
 }
@@ -902,12 +922,12 @@
   display: none;
   flex-direction: column;
   gap: 12px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--chrome-ai-color-surface-muted);
+  border: 1px solid var(--chrome-ai-color-border);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 12px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 1px 2px var(--chrome-ai-color-shadow);
   max-height: 240px;
 }
 
@@ -939,25 +959,25 @@
 }
 
 .chrome-ai-chat-suggestions-drawer__body::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--chrome-ai-color-border-strong);
   border-radius: 3px;
 }
 
 .chrome-ai-chat-suggestions-item {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--chrome-ai-color-border-strong);
   border-radius: 10px;
   padding: 10px 12px;
   text-align: left;
   font-size: 13px;
-  color: #1f2937;
-  background-color: #ffffff;
+  color: var(--chrome-ai-color-text);
+  background-color: var(--chrome-ai-color-surface);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .chrome-ai-chat-suggestions-item:hover {
-  background-color: #eff6ff;
-  border-color: #3b82f6;
+  background-color: var(--chrome-ai-color-interactive-subtle);
+  border-color: var(--chrome-ai-color-interactive);
   box-shadow: 0 1px 2px rgba(59, 130, 246, 0.15);
 }
 
@@ -975,96 +995,38 @@
 
 @media (prefers-color-scheme: dark) {
   .chrome-ai-chat-suggestions-toggle {
-    background-color: #1f2937;
-    border-color: #374151;
-    color: #f9fafb;
+    background-color: var(--chrome-ai-color-surface);
+    border-color: var(--chrome-ai-color-border-strong);
+    color: var(--chrome-ai-color-text);
   }
 
   .chrome-ai-chat-suggestions-toggle:hover:not(:disabled) {
-    background-color: #111827;
-    border-color: #4b5563;
+    background-color: var(--chrome-ai-color-surface-muted);
+    border-color: var(--chrome-ai-color-border-strong);
   }
 
   .chrome-ai-chat-suggestions-toggle::after {
-    border-top-color: #f9fafb;
+    border-top-color: var(--chrome-ai-color-text);
   }
 
   .chrome-ai-chat-suggestions-status {
-    color: #9ca3af;
+    color: var(--chrome-ai-color-text-muted);
   }
 
   .chrome-ai-chat-suggestions-drawer {
-    background-color: #1f2937;
-    border-color: #374151;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    background-color: var(--chrome-ai-color-surface-muted);
+    border-color: var(--chrome-ai-color-border);
+    box-shadow: 0 1px 3px var(--chrome-ai-color-shadow);
   }
 
   .chrome-ai-chat-suggestions-item {
-    background-color: #111827;
-    border-color: #374151;
-    color: #e5e7eb;
+    background-color: var(--chrome-ai-color-surface);
+    border-color: var(--chrome-ai-color-border-strong);
+    color: var(--chrome-ai-color-text);
   }
 
   .chrome-ai-chat-suggestions-item:hover {
-    background-color: #1e3a8a;
-    border-color: #60a5fa;
-  }
-}
-@media (prefers-color-scheme: dark) {
-  .chrome-ai-mock-menu {
-    background-color: #1f2937;
-    border-color: #374151;
-  }
-  
-  .chrome-ai-mock-menu__title {
-    color: #f9fafb;
-    border-bottom-color: #374151;
-  }
-  
-  .chrome-ai-mock-menu__summary,
-  .chrome-ai-translate {
-    background-color: #374151;
-    border-color: #4b5563;
-  }
-  
-  .chrome-ai-mock-menu__summary-title,
-  .chrome-ai-translate__title {
-    color: #f9fafb;
-  }
-  
-  .chrome-ai-mock-menu__summary-body,
-  .chrome-ai-translate__body {
-    color: #d1d5db;
-  }
-  
-  .chrome-ai-mock-menu__item {
-    color: #d1d5db;
-  }
-  
-  .chrome-ai-mock-menu__item-title {
-    color: #f9fafb;
-  }
-  
-  .chrome-ai-mock-menu__item-description {
-    color: #9ca3af;
-  }
-  
-  .chrome-ai-mock-menu__item:hover {
-    background-color: #374151;
-  }
-  
-  .chrome-ai-translate__select {
-    background-color: #374151;
-    border-color: #4b5563;
-    color: #f9fafb;
-  }
-  
-  .chrome-ai-translate__select:focus {
-    border-color: #60a5fa;
-  }
-  
-  .chrome-ai-translate__body.loading,
-  .chrome-ai-mock-menu__summary-body.loading {
-    color: #9ca3af;
+    background-color: var(--chrome-ai-color-interactive-subtle);
+    border-color: var(--chrome-ai-color-interactive);
   }
 }
