@@ -33,6 +33,7 @@ export class OverlayController {
     this.#mountContainer();
     this.#attachEvents();
     this.menu.onSelect(this.handleMenuSelect.bind(this));
+
     this.initialized = true;
   }
 
@@ -131,23 +132,8 @@ export class OverlayController {
         if (!this.menu.isVisible()) this.menu.show();
         this.button.setActive(true);
         
-        // Load suggested questions
-        try {
-          const suggestions = await getSuggestedQuestions(document, () => {});
-          this.menu.showChatSuggestions(suggestions, (suggestion) => {
-            this.handleChatMessage(suggestion);
-          });
-        } catch (e) {
-          // Fallback suggestions if generation fails
-          const fallbackSuggestions = [
-            'What is this page about?',
-            'Can you explain the main points?',
-            'What should I take away from this?'
-          ];
-          this.menu.showChatSuggestions(fallbackSuggestions, (suggestion) => {
-            this.handleChatMessage(suggestion);
-          });
-        }
+        // Load and show suggested questions in drawer
+        await this.loadAndShowSuggestions();
         
         // Focus input for better UX
         this.menu.focusChatInput();
@@ -157,6 +143,64 @@ export class OverlayController {
         if (code === 'ai-unavailable') message = 'AI chat is not available in this Chrome build.';
         this.menu.addChatMessage('assistant', message);
       }
+    }
+  }
+
+  /** Load and display suggested questions in the drawer */
+  async loadAndShowSuggestions() {
+    this.menu.showChatSuggestionsLoading('Getting suggestions…');
+    try {
+      const suggestions = await getSuggestedQuestions(document, () => {});
+      this.showSuggestionsDrawer(suggestions);
+    } catch (e) {
+      // Fallback suggestions if generation fails
+      const fallbackSuggestions = [
+        'What is this page about?',
+        'Can you explain the main points?',
+        'What should I take away from this?'
+      ];
+      this.showSuggestionsDrawer(fallbackSuggestions);
+    }
+  }
+
+  /** Show suggestions drawer with given suggestions */
+  showSuggestionsDrawer(suggestions) {
+    const list = Array.isArray(suggestions) ? suggestions : [];
+    if (list.length === 0) {
+      this.menu.showChatSuggestionsMessage('No suggestions available right now.');
+      return;
+    }
+
+    this.menu.showChatSuggestions(list, (suggestion) => {
+      this.handleSuggestionSelect(suggestion);
+    });
+  }
+
+  /** Hide suggestions drawer */
+  hideSuggestionsDrawer() {
+    this.menu.hideChatSuggestions();
+  }
+
+  /** Handle suggestion selection from drawer */
+  async handleSuggestionSelect(suggestion) {
+    // Hide drawer after selection
+    this.hideSuggestionsDrawer();
+    
+    // Send the suggestion as a chat message
+    await this.handleChatMessage(suggestion);
+  }
+
+  /** Update suggestions with new ones and show carousel */
+  updateSuggestions(newSuggestions) {
+    if (this.menu.currentView === 'chat') {
+      const list = Array.isArray(newSuggestions) ? newSuggestions : [];
+      if (list.length === 0) {
+        this.menu.showChatSuggestionsMessage('No new suggestions available right now.');
+        return;
+      }
+      this.menu.showChatSuggestions(list, (suggestion) => {
+        this.handleSuggestionSelect(suggestion);
+      });
     }
   }
 

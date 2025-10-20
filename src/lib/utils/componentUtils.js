@@ -319,7 +319,39 @@ export const createChatView = (createElement, container, onBack, onSendMessage) 
   const inputArea = createElement('div', { 
     classNames: ['chrome-ai-chat-input-area'] 
   });
-  
+
+  const suggestionsContainer = createElement('div', {
+    classNames: ['chrome-ai-chat-suggestions-container']
+  });
+
+  const suggestionsToggle = createElement('button', {
+    classNames: ['chrome-ai-chat-suggestions-toggle'],
+    attributes: {
+      type: 'button',
+      'aria-expanded': 'false',
+      'aria-label': 'View suggested prompts',
+      'aria-disabled': 'true',
+      disabled: 'disabled'
+    },
+    textContent: 'Suggestions'
+  });
+
+  const suggestionsStatus = createElement('span', {
+    classNames: ['chrome-ai-chat-suggestions-status']
+  });
+
+  suggestionsContainer.append(suggestionsToggle, suggestionsStatus);
+
+  const suggestionsDrawer = createElement('div', {
+    classNames: ['chrome-ai-chat-suggestions-drawer']
+  });
+
+  const drawerBody = createElement('div', {
+    classNames: ['chrome-ai-chat-suggestions-drawer__body']
+  });
+
+  suggestionsDrawer.appendChild(drawerBody);
+
   const inputWrapper = createElement('div', { 
     classNames: ['chrome-ai-chat-input-wrapper'] 
   });
@@ -340,7 +372,7 @@ export const createChatView = (createElement, container, onBack, onSendMessage) 
   });
   
   inputWrapper.append(messageInput, sendButton);
-  inputArea.appendChild(inputWrapper);
+  inputArea.append(suggestionsContainer, suggestionsDrawer, inputWrapper);
   
   chatContainer.append(messagesArea, inputArea);
   container.append(header, chatContainer);
@@ -351,6 +383,47 @@ export const createChatView = (createElement, container, onBack, onSendMessage) 
     messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
   });
   
+  let drawerOpen = false;
+
+  const setSuggestionsToggleState = ({ loading = false, enabled = false, message = '' } = {}) => {
+    suggestionsStatus.textContent = message;
+    if (loading) {
+      suggestionsToggle.classList.add('chrome-ai-chat-suggestions-toggle--loading');
+    } else {
+      suggestionsToggle.classList.remove('chrome-ai-chat-suggestions-toggle--loading');
+    }
+
+    if (enabled) {
+      suggestionsToggle.removeAttribute('disabled');
+      suggestionsToggle.setAttribute('aria-disabled', 'false');
+    } else {
+      suggestionsToggle.setAttribute('disabled', 'disabled');
+      suggestionsToggle.setAttribute('aria-disabled', 'true');
+      if (drawerOpen) {
+        closeDrawer();
+      }
+    }
+  };
+
+  const openDrawer = () => {
+    drawerOpen = true;
+    suggestionsDrawer.classList.add('chrome-ai-chat-suggestions-drawer--open');
+    suggestionsToggle.setAttribute('aria-expanded', 'true');
+    suggestionsToggle.classList.add('chrome-ai-chat-suggestions-toggle--open');
+  };
+
+  const closeDrawer = () => {
+    drawerOpen = false;
+    suggestionsDrawer.classList.remove('chrome-ai-chat-suggestions-drawer--open');
+    suggestionsToggle.setAttribute('aria-expanded', 'false');
+    suggestionsToggle.classList.remove('chrome-ai-chat-suggestions-toggle--open');
+  };
+
+  suggestionsToggle.addEventListener('click', () => {
+    if (suggestionsToggle.getAttribute('aria-disabled') === 'true') return;
+    drawerOpen ? closeDrawer() : openDrawer();
+  });
+
   // Handle send button
   const handleSend = () => {
     const message = messageInput.value.trim();
@@ -464,37 +537,44 @@ export const createChatView = (createElement, container, onBack, onSendMessage) 
         typingElement.parentNode.removeChild(typingElement);
       }
     },
-    showSuggestions: (suggestions, onSelect) => {
-      // Clear existing suggestions
-      const existingSuggestions = container.querySelector('.chrome-ai-chat-suggestions');
-      if (existingSuggestions) {
-        existingSuggestions.remove();
-      }
-      
-      const suggestionsContainer = createElement('div', { 
-        classNames: ['chrome-ai-chat-suggestions'] 
+    showChatSuggestionsLoading: (label) => {
+      setSuggestionsToggleState({ loading: true, enabled: false, message: label });
+      drawerBody.innerHTML = '';
+    },
+    showChatSuggestionsMessage: (message) => {
+      setSuggestionsToggleState({ loading: false, enabled: false, message });
+      drawerBody.innerHTML = '';
+    },
+    showChatSuggestions: (suggestions, onSelect) => {
+      drawerBody.innerHTML = '';
+      const list = createElement('div', {
+        classNames: ['chrome-ai-chat-suggestions-list']
       });
-      
-      suggestions.forEach(suggestion => {
-        const suggestionBtn = createElement('button', {
-          classNames: ['chrome-ai-chat-suggestion'],
+
+      suggestions.forEach((suggestion) => {
+        const item = createElement('button', {
+          classNames: ['chrome-ai-chat-suggestions-item'],
           attributes: { type: 'button' },
           textContent: suggestion
         });
-        
-        suggestionBtn.addEventListener('click', () => {
+
+        item.addEventListener('click', () => {
+          closeDrawer();
           messageInput.value = suggestion;
           messageInput.focus();
           if (onSelect) onSelect(suggestion);
         });
-        
-        suggestionsContainer.appendChild(suggestionBtn);
+
+        list.appendChild(item);
       });
-      
-      messagesArea.appendChild(suggestionsContainer);
-      
-      // Auto-scroll to bottom for suggestions
-      messagesArea.scrollTop = messagesArea.scrollHeight;
+
+      drawerBody.appendChild(list);
+      setSuggestionsToggleState({ loading: false, enabled: true, message: `${suggestions.length} suggestion${suggestions.length === 1 ? '' : 's'} available` });
+    },
+    hideChatSuggestions: () => {
+      drawerBody.innerHTML = '';
+      closeDrawer();
+      setSuggestionsToggleState({ loading: false, enabled: false, message: '' });
     },
     clearMessages: () => {
       messagesArea.innerHTML = '';

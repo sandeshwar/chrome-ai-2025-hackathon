@@ -225,7 +225,28 @@ export class MockMenu {
   /** Show suggested questions */
   showChatSuggestions(suggestions, onSelect) {
     if (this._chatView && this.currentView === 'chat') {
-      this._chatView.showSuggestions(suggestions, onSelect);
+      this._chatView.showChatSuggestions(suggestions, onSelect);
+    }
+  }
+
+  /** Show suggestions loading state */
+  showChatSuggestionsLoading(label) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.showChatSuggestionsLoading(label);
+    }
+  }
+
+  /** Show suggestions informational message */
+  showChatSuggestionsMessage(message) {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.showChatSuggestionsMessage(message);
+    }
+  }
+
+  /** Hide suggestions drawer */
+  hideChatSuggestions() {
+    if (this._chatView && this.currentView === 'chat') {
+      this._chatView.hideChatSuggestions();
     }
   }
 
