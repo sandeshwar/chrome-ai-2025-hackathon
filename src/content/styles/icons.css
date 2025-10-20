@@ -17,8 +17,8 @@
 
 /* Sparkles icon for header */
 .chrome-ai-icon--sparkles {
-  width: 12px;
-  height: 12px;
+  width: 36px;
+  height: 36px;
 }
 
 /* File lines icon for summary */
@@ -56,9 +56,8 @@
 }
 
 .chrome-ai-mock-menu__title .chrome-ai-icon {
-  width: 12px;
-  height: 12px;
-  margin-right: 2px;
+  width: 36px;
+  height: 36px;
 }
 
 .chrome-ai-mock-menu__item-title .chrome-ai-icon {
