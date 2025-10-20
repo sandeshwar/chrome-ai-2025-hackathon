@@ -2,7 +2,6 @@
 
 /** @type {ReadonlyArray<MenuItem>} */
 export const DEFAULT_ITEMS = Object.freeze([
-  { id: 'idea', title: 'Generate Ideas', description: 'Brainstorm creative concepts in seconds.' },
   { id: 'summary', title: 'Summarize Page', description: 'Get a concise overview of what you are reading.' },
   { id: 'chat', title: 'Open Chat', description: 'Start a conversation with the assistant.' },
 ]);

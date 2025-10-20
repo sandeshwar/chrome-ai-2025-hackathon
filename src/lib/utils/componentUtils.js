@@ -26,7 +26,6 @@ export const createMenuItemElement = (createElement, item) => {
   });
 
   const iconMap = {
-    'idea': 'idea',
     'summary': 'file-lines',
     'chat': 'chat',
     'translate': 'language'

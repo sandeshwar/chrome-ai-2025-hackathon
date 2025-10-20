@@ -23,14 +23,6 @@ export const createIcon = (iconType, classNames = []) => {
   const gradientId = `${iconType}Gradient_${Math.random().toString(36).substr(2, 9)}`;
   
   const iconDefinitions = {
-    'idea': () => {
-      // Minimal lightbulb, stroke only, uses currentColor
-      svg.innerHTML = `
-        <path d="M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M10 20h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M12 4.5A5.5 5.5 0 0 0 6.5 10c0 1.8.9 3.1 2.1 4 .9.7 1.4 1.7 1.4 2.5h4c0-.8.5-1.8 1.4-2.5 1.2-.9 2.1-2.2 2.1-4A5.5 5.5 0 0 0 12 4.5z" stroke="currentColor" stroke-width="1.6" fill="none"/>
-      `;
-    },
     'robot': () => {
       svg.innerHTML = `
         <defs>
