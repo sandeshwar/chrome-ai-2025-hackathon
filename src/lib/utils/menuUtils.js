@@ -5,6 +5,7 @@ export const DEFAULT_ITEMS = Object.freeze([
   { id: 'summary', title: 'Summarize Page', description: 'Get a concise overview of what you are reading.' },
   { id: 'chat', title: 'Open Chat', description: 'Start a conversation with the assistant.' },
   { id: 'rewrite', title: 'Improve Writing', description: 'Refine tone or length of selected text.' },
+  { id: 'prompt', title: 'Prompt Quick Actions', description: 'Fire off templated AI prompts for common tasks.' },
 ]);
 
 /**

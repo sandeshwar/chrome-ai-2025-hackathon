@@ -3,6 +3,7 @@ import { summarizeCurrentPageWithProgress } from '../business/summarizationServi
 import { translateCurrentPageWithProgress } from '../business/translationService.js';
 import { sendChatMessageStreaming, getSuggestedQuestions, canChat } from '../business/chatService.js';
 import { rewriteTextWithProgress } from '../business/rewriterService.js';
+import { getDefaultPrompts, getRecentPrompts, addRecentPromptUsage, sendPrompt } from '../business/promptService.js';
 import { LANGUAGES } from '../utils/i18nUtils.js';
 
 /** Orchestrates FAB + menu mounting and interactions. */
@@ -23,6 +24,7 @@ export class OverlayController {
     this.currentTypingIndicator = null; // Current typing indicator
     this.container = null;
     this.initialized = false;
+    this.promptTemplates = getDefaultPrompts();
     this.handleToggle = this.handleToggle.bind(this);
     this.handleOutsideClick = this.handleOutsideClick.bind(this);
   }
@@ -162,6 +164,27 @@ export class OverlayController {
         this.menu.showMenu();
       }
     }
+    if (id === 'prompt') {
+      try {
+        const selectedText = this.#getSelectedText() || '';
+        this.promptTemplates = getDefaultPrompts();
+        const recents = getRecentPrompts();
+        this.menu.showPromptView({
+          templates: this.promptTemplates,
+          recents,
+          initialInput: selectedText,
+          onRunPrompt: (request) => this.handlePromptRun(request),
+          onInsertResult: (text) => this.handlePromptInsert(text),
+          onCopyResult: (text) => this.handlePromptCopy(text),
+        });
+        if (!this.menu.isVisible()) this.menu.show();
+        this.button.setActive(true);
+        this.menu.focusPromptInput();
+        if (selectedText) this.menu.setPromptStatus('Loaded selected text into context.', 'info');
+      } catch (e) {
+        this.menu.showMenu();
+      }
+    }
   }
 
   #getSelectedText() {
@@ -253,6 +276,98 @@ export class OverlayController {
       })
       .catch(() => {
         this.menu.setRewriteStatus('Copy failed. Try selecting manually.', 'error');
+      });
+  }
+
+  async handlePromptRun({ templateId, input }) {
+    if (!this.menu) return;
+    const trimmedInput = String(input ?? '').trim();
+    if (!trimmedInput) {
+      this.menu.setPromptStatus('Enter context before running a prompt.', 'error');
+      this.menu.clearPromptOutput();
+      return;
+    }
+    const templateDef = this.promptTemplates.find((item) => item.id === templateId) || this.promptTemplates[0] || null;
+    if (!templateDef || typeof templateDef.template !== 'string') {
+      this.menu.setPromptStatus('Select a prompt to run.', 'error');
+      this.menu.clearPromptOutput();
+      return;
+    }
+
+    this.menu.setPromptStatus('Preparing model…');
+    this.menu.setPromptButtonState(true);
+    this.menu.showPromptLoading('Running prompt…');
+
+    try {
+      const result = await sendPrompt({
+        template: templateDef.template,
+        input: trimmedInput,
+        onProgress: (phase) => {
+          if (phase === 'download_start') this.menu.setPromptStatus('Downloading model…');
+          if (phase === 'download_complete') this.menu.setPromptStatus('Model ready. Generating…');
+          if (phase === 'inference_start') this.menu.setPromptStatus('Generating response…');
+          if (phase === 'inference_complete') this.menu.setPromptStatus('Prompt complete!', 'success');
+        },
+      });
+      if (result) {
+        this.menu.setPromptResult(result);
+        this.menu.setPromptStatus('Prompt ready!', 'success');
+        addRecentPromptUsage(templateDef, trimmedInput);
+        this.menu.setPromptRecents(getRecentPrompts());
+      } else {
+        const err = new Error('Empty prompt result');
+        err.code = 'empty-result';
+        throw err;
+      }
+    } catch (e) {
+      console.error('[OverlayController] handlePromptRun error:', e);
+      const code = e && e.code;
+      let message = 'Unable to run prompt.';
+      if (code === 'ai-unavailable') message = 'Prompt API is not available in this Chrome build.';
+      else if (code === 'no-content') message = 'Enter context before running a prompt.';
+      else if (code === 'empty-result') message = 'The model returned an empty result.';
+      else if (code === 'inference-failed') message = `AI prompt failed: ${e.originalError?.message || e.message}`;
+      this.menu.setPromptStatus(message, 'error');
+      this.menu.clearPromptOutput();
+    } finally {
+      this.menu.setPromptButtonState(false);
+    }
+  }
+
+  handlePromptInsert(text) {
+    const content = String(text ?? '').trim();
+    if (!content) {
+      this.menu.setPromptStatus('No result to insert yet.', 'error');
+      return;
+    }
+    try {
+      const selection = window.getSelection && window.getSelection();
+      if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(content));
+        selection.removeAllRanges();
+      } else {
+        navigator.clipboard.writeText(content).catch(() => {});
+      }
+      this.menu.setPromptStatus('Suggestion inserted.', 'success');
+    } catch (e) {
+      this.menu.setPromptStatus('Could not insert text automatically.', 'error');
+    }
+  }
+
+  handlePromptCopy(text) {
+    const content = String(text ?? '').trim();
+    if (!content) {
+      this.menu.setPromptStatus('Nothing to copy yet.', 'error');
+      return;
+    }
+    navigator.clipboard.writeText(content)
+      .then(() => {
+        this.menu.setPromptStatus('Copied to clipboard.', 'success');
+      })
+      .catch(() => {
+        this.menu.setPromptStatus('Copy failed. Try selecting manually.', 'error');
       });
   }
 

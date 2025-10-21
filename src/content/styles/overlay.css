@@ -569,6 +569,212 @@
   border-color: var(--chrome-ai-color-interactive);
 }
 
+.chrome-ai-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 8px 16px;
+}
+
+.chrome-ai-prompt__section {
+  background-color: var(--chrome-ai-color-surface-muted);
+  border: 1px solid var(--chrome-ai-color-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 2px var(--chrome-ai-color-shadow-subtle);
+}
+
+.chrome-ai-prompt__section--compact {
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+.chrome-ai-prompt__section-heading {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--chrome-ai-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chrome-ai-prompt__templates,
+.chrome-ai-prompt__recents {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chrome-ai-prompt__template,
+.chrome-ai-prompt__recent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: var(--chrome-ai-color-surface);
+  text-align: left;
+  color: var(--chrome-ai-color-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.chrome-ai-prompt__template:hover,
+.chrome-ai-prompt__recent:hover {
+  border-color: var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface-muted);
+  transform: translateY(-1px);
+}
+
+.chrome-ai-prompt__template.is-selected,
+.chrome-ai-prompt__recent.is-selected {
+  border-color: var(--chrome-ai-color-interactive);
+  background-color: var(--chrome-ai-color-interactive-subtle);
+  box-shadow: 0 0 0 1px var(--chrome-ai-color-interactive);
+}
+
+.chrome-ai-prompt__template-title,
+.chrome-ai-prompt__recent-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--chrome-ai-color-text);
+}
+
+.chrome-ai-prompt__template-desc,
+.chrome-ai-prompt__recent-desc {
+  font-size: 12px;
+  color: var(--chrome-ai-color-text-muted);
+  line-height: 1.4;
+}
+
+.chrome-ai-prompt__empty {
+  font-size: 12px;
+  color: var(--chrome-ai-color-text-subtle);
+  padding: 8px 4px;
+}
+
+.chrome-ai-prompt__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--chrome-ai-color-text);
+}
+
+.chrome-ai-prompt__input {
+  width: 100%;
+  min-height: 120px;
+  border-radius: 10px;
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chrome-ai-prompt__input::placeholder {
+  color: var(--chrome-ai-color-text-subtle);
+}
+
+.chrome-ai-prompt__input:focus {
+  outline: none;
+  border-color: var(--chrome-ai-color-interactive);
+  box-shadow: 0 0 0 2px rgba(45, 104, 254, 0.18);
+}
+
+.chrome-ai-prompt__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.chrome-ai-prompt__primary {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background-color: var(--chrome-ai-color-interactive);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.chrome-ai-prompt__primary:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.chrome-ai-prompt__primary:hover:not(:disabled) {
+  background-color: var(--chrome-ai-color-interactive-strong);
+  transform: translateY(-1px);
+}
+
+.chrome-ai-prompt__primary:active:not(:disabled) {
+  background-color: var(--chrome-ai-color-interactive-active);
+}
+
+.chrome-ai-prompt__action {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--chrome-ai-color-border);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.chrome-ai-prompt__action:hover {
+  background-color: var(--chrome-ai-color-surface-muted);
+  border-color: var(--chrome-ai-color-border-strong);
+  transform: translateY(-1px);
+}
+
+.chrome-ai-prompt__output {
+  min-height: 160px;
+  border-radius: 10px;
+  border: 1px solid var(--chrome-ai-color-border-strong);
+  background-color: var(--chrome-ai-color-surface);
+  color: var(--chrome-ai-color-text);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-y: auto;
+  transition: border-color 0.15s ease;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+.chrome-ai-prompt__output.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--chrome-ai-color-text-muted);
+  font-style: italic;
+}
+
+.chrome-ai-prompt__status {
+  font-size: 13px;
+  color: var(--chrome-ai-color-text-subtle);
+  min-height: 18px;
+}
+
+.chrome-ai-prompt__status--error {
+  color: #dc2626;
+}
+
+.chrome-ai-prompt__status--success {
+  color: #059669;
+}
+
 /* Chat Interface Styles */
 .chrome-ai-chat-container {
   display: flex;

@@ -6,12 +6,14 @@ import {
   createSummaryView,
   createTranslationView,
   createRewriteView,
+  createPromptView,
   createChatView,
   showSummaryLoading,
   showTranslationLoading,
   updateSummaryView,
   updateTranslationView,
 } from '../utils/componentUtils.js';
+import { safeRenderMarkdown, hasMarkdown } from '../utils/markdownUtils.js';
 
 /** Mock menu view wrapper with mobile-style navigation. */
 export class MockMenu {
@@ -26,13 +28,15 @@ export class MockMenu {
     this.stateCoordinator = stateCoordinator;
     this.items = Array.isArray(items) ? items : [];
     this.visible = false;
-    this.currentView = 'menu'; // 'menu', 'summary', 'translation', 'chat'
+    this.currentView = 'menu'; // 'menu', 'summary', 'translation', 'chat', 'rewrite', 'prompt'
     this._selectHandler = null;
     this._clickHandler = null;
     this._keydownHandler = null;
     this._chatView = null;
     this._rewriteView = null;
     this._rewriteHandlers = { rewrite: null, use: null, copy: null };
+    this._promptView = null;
+    this._promptHandlers = { run: null, runKeydown: null, insert: null, copy: null };
     
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this.container = buildMenuElement(createElement, this.items);
@@ -98,6 +102,7 @@ export class MockMenu {
     // Clean up existing event listeners before clearing
     this._cleanupEventListeners();
     this.#cleanupRewriteView();
+    this.#cleanupPromptView();
     
     // Clear and rebuild the menu IN-PLACE (avoid nesting a new container)
     // Previously we appended a fresh .chrome-ai-mock-menu element inside the
@@ -118,6 +123,7 @@ export class MockMenu {
   /** Show summary view with back navigation */
   showSummaryView(text = '') {
     this.#cleanupRewriteView();
+    this.#cleanupPromptView();
     this.currentView = 'summary';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     createSummaryView(createElement, this.container, text, () => this.showMenu());
@@ -126,6 +132,7 @@ export class MockMenu {
   /** Show translation view with back navigation */
   showTranslationView(languages = [], onTranslate) {
     this.#cleanupRewriteView();
+    this.#cleanupPromptView();
     this.currentView = 'translation';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     createTranslationView(createElement, this.container, languages, () => this.showMenu(), onTranslate);
@@ -187,6 +194,7 @@ export class MockMenu {
   /** Show chat view */
   showChatView(onSendMessage) {
     this.#cleanupRewriteView();
+    this.#cleanupPromptView();
     this.currentView = 'chat';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this._chatView = createChatView(createElement, this.container, () => this.showMenu(), onSendMessage);
@@ -210,6 +218,7 @@ export class MockMenu {
 
   showRewriteView({ initialText = '', onRewrite, onUseResult, onCopyResult, quickActions = [] } = {}) {
     this.#cleanupRewriteView();
+    this.#cleanupPromptView();
     this.currentView = 'rewrite';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     const view = createRewriteView(createElement, this.container, { initialText, onBack: () => this.showMenu() });
@@ -343,6 +352,228 @@ export class MockMenu {
   getRewriteResultText() {
     if (!this._rewriteView) return '';
     return String(this._rewriteView.outputField.textContent ?? '');
+  }
+
+  #cleanupPromptView() {
+    if (!this._promptView) return;
+    const { runButton, insertButton, copyButton, inputField } = this._promptView;
+    if (runButton && this._promptHandlers.run) {
+      runButton.removeEventListener('click', this._promptHandlers.run);
+    }
+    if (inputField && this._promptHandlers.runKeydown) {
+      inputField.removeEventListener('keydown', this._promptHandlers.runKeydown);
+    }
+    if (insertButton && this._promptHandlers.insert) {
+      insertButton.removeEventListener('click', this._promptHandlers.insert);
+    }
+    if (copyButton && this._promptHandlers.copy) {
+      copyButton.removeEventListener('click', this._promptHandlers.copy);
+    }
+    this._promptView = null;
+    this._promptHandlers = { run: null, insert: null, copy: null };
+  }
+
+  showPromptView({ templates = [], recents = [], initialInput = '', onRunPrompt, onInsertResult, onCopyResult } = {}) {
+    this.#cleanupPromptView();
+    this.#cleanupRewriteView();
+    this.currentView = 'prompt';
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const view = createPromptView(createElement, this.container, {
+      templates,
+      recent: recents,
+      initialInput,
+      onBack: () => this.showMenu(),
+    });
+    this._promptView = {
+      ...view,
+      templates,
+      recents,
+      selectedTemplateId: templates[0]?.id ?? null,
+      selectedRecentId: null,
+    };
+
+    const handleRun = (event) => {
+      event.preventDefault();
+      if (typeof onRunPrompt === 'function') {
+        onRunPrompt({
+          templateId: this._promptView.selectedTemplateId,
+          input: String(this._promptView.inputField.value ?? ''),
+        });
+      }
+    };
+    view.runButton.addEventListener('click', handleRun);
+    this._promptHandlers.run = handleRun;
+
+    const handleRunKeydown = (event) => {
+      if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        handleRun(event);
+      }
+    };
+    view.inputField.addEventListener('keydown', handleRunKeydown);
+    this._promptHandlers.runKeydown = handleRunKeydown;
+
+    const handleInsert = (event) => {
+      event.preventDefault();
+      if (typeof onInsertResult === 'function') {
+        onInsertResult(this.getPromptResultText());
+      }
+    };
+    view.insertButton.addEventListener('click', handleInsert);
+    this._promptHandlers.insert = handleInsert;
+
+    const handleCopy = (event) => {
+      event.preventDefault();
+      if (typeof onCopyResult === 'function') {
+        onCopyResult(this.getPromptResultText());
+      }
+    };
+    view.copyButton.addEventListener('click', handleCopy);
+    this._promptHandlers.copy = handleCopy;
+
+    this.setPromptTemplates(templates);
+    this.setPromptRecents(recents);
+    this.setPromptStatus('');
+  }
+
+  setPromptTemplates(templates = []) {
+    if (!this._promptView) return;
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    this._promptView.templates = templates;
+    if (!templates.some((t) => t.id === this._promptView.selectedTemplateId)) {
+      this._promptView.selectedTemplateId = templates[0]?.id ?? null;
+    }
+    const { templateList } = this._promptView;
+    templateList.innerHTML = '';
+    if (!templates.length) {
+      const empty = createElement('div', { classNames: ['chrome-ai-prompt__empty'], textContent: 'No templates available.' });
+      templateList.appendChild(empty);
+      return;
+    }
+    templates.forEach((template) => {
+      const button = createElement('button', {
+        classNames: ['chrome-ai-prompt__template', template.id === this._promptView.selectedTemplateId ? 'is-selected' : null].filter(Boolean),
+        attributes: { type: 'button', 'data-template-id': template.id },
+      });
+      const title = createElement('div', { classNames: ['chrome-ai-prompt__template-title'], textContent: template.label });
+      const description = createElement('div', { classNames: ['chrome-ai-prompt__template-desc'], textContent: template.description });
+      button.append(title, description);
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        this._promptView.selectedTemplateId = template.id;
+        this._promptView.selectedRecentId = null;
+        this.setPromptTemplates(this._promptView.templates);
+        this.setPromptRecents(this._promptView.recents);
+      });
+      templateList.appendChild(button);
+    });
+  }
+
+  setPromptRecents(recents = []) {
+    if (!this._promptView) return;
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    this._promptView.recents = recents;
+    const { recentList } = this._promptView;
+    recentList.innerHTML = '';
+    if (!recents.length) {
+      const empty = createElement('div', { classNames: ['chrome-ai-prompt__empty'], textContent: 'Recent prompts will appear here.' });
+      recentList.appendChild(empty);
+      return;
+    }
+    recents.forEach((entry) => {
+      const button = createElement('button', {
+        classNames: ['chrome-ai-prompt__recent', entry.id === this._promptView.selectedRecentId ? 'is-selected' : null].filter(Boolean),
+        attributes: { type: 'button', 'data-recent-id': entry.id },
+      });
+      const title = createElement('div', { classNames: ['chrome-ai-prompt__recent-title'], textContent: entry.label });
+      const desc = createElement('div', { classNames: ['chrome-ai-prompt__recent-desc'], textContent: entry.description });
+      button.append(title, desc);
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        this._promptView.selectedTemplateId = entry.templateId;
+        this._promptView.selectedRecentId = entry.id;
+        if (typeof entry.input === 'string') {
+          this.setPromptInputText(entry.input);
+        }
+        this.setPromptTemplates(this._promptView.templates);
+        this.setPromptRecents(this._promptView.recents);
+        this.setPromptStatus(`Using saved context from a previous "${entry.label}" prompt.`);
+      });
+      recentList.appendChild(button);
+    });
+  }
+
+  setPromptStatus(message = '', variant = 'info') {
+    if (!this._promptView) return;
+    const { status } = this._promptView;
+    status.textContent = message;
+    status.className = 'chrome-ai-prompt__status';
+    if (message) {
+      status.classList.add(`chrome-ai-prompt__status--${variant}`);
+    }
+  }
+
+  showPromptLoading(label) {
+    if (!this._promptView) return;
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const { outputField } = this._promptView;
+    outputField.classList.add('loading');
+    outputField.innerHTML = '';
+    const spinner = createElement('span', { classNames: ['chrome-ai-spinner'], attributes: { 'aria-hidden': 'true' } });
+    const text = createElement('span', { classNames: ['chrome-ai-spinner__label'], textContent: label });
+    outputField.append(spinner, text);
+  }
+
+  clearPromptOutput() {
+    if (!this._promptView) return;
+    const { outputField } = this._promptView;
+    outputField.classList.remove('loading');
+    outputField.innerHTML = '';
+  }
+
+  setPromptResult(text) {
+    if (!this._promptView) return;
+    const { outputField } = this._promptView;
+    outputField.classList.remove('loading');
+    outputField.innerHTML = '';
+    if (!text) return;
+    if (hasMarkdown(text)) {
+      outputField.innerHTML = safeRenderMarkdown(text);
+    } else {
+      outputField.textContent = text;
+    }
+  }
+
+  setPromptButtonState(disabled) {
+    if (!this._promptView) return;
+    const { runButton } = this._promptView;
+    runButton.disabled = disabled;
+    runButton.textContent = disabled ? 'Running…' : 'Run prompt';
+  }
+
+  focusPromptInput() {
+    if (!this._promptView) return;
+    this._promptView.inputField.focus();
+  }
+
+  setPromptInputText(text) {
+    if (!this._promptView) return;
+    this._promptView.inputField.value = text ?? '';
+  }
+
+  getPromptInputText() {
+    if (!this._promptView) return '';
+    return String(this._promptView.inputField.value ?? '');
+  }
+
+  getPromptResultText() {
+    if (!this._promptView) return '';
+    return String(this._promptView.outputField.textContent ?? '').trim();
+  }
+
+  getPromptSelectedTemplateId() {
+    if (!this._promptView) return null;
+    return this._promptView.selectedTemplateId;
   }
 
   /** Add message to chat */

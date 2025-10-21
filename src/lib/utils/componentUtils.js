@@ -29,7 +29,8 @@ export const createMenuItemElement = (createElement, item) => {
     'summary': 'file-lines',
     'chat': 'chat',
     'translate': 'language',
-    'rewrite': 'sparkles'
+    'rewrite': 'sparkles',
+    'prompt': 'robot'
   };
 
   const iconType = iconMap[item.id] || 'circle';
@@ -200,6 +201,77 @@ export const createRewriteView = (createElement, container, { initialText = '', 
     outputField,
     useButton,
     copyButton,
+    status,
+  };
+};
+
+export const createPromptView = (createElement, container, { templates = [], recent = [], initialInput = '', onBack }) => {
+  container.innerHTML = '';
+
+  const header = createBackHeader(createElement, 'Prompt Quick Actions', onBack);
+  container.appendChild(header);
+
+  const content = createElement('div', { classNames: ['chrome-ai-mock-menu__content', 'chrome-ai-prompt'] });
+
+  const templateSection = createElement('div', { classNames: ['chrome-ai-prompt__section'] });
+  const templateLabel = createElement('div', { classNames: ['chrome-ai-prompt__section-heading'], textContent: 'Templates' });
+  const templateList = createElement('div', { classNames: ['chrome-ai-prompt__templates'] });
+  templateSection.append(templateLabel, templateList);
+
+  const recentSection = createElement('div', { classNames: ['chrome-ai-prompt__section', 'chrome-ai-prompt__section--compact'] });
+  const recentLabel = createElement('div', { classNames: ['chrome-ai-prompt__section-heading'], textContent: 'Recent' });
+  const recentList = createElement('div', { classNames: ['chrome-ai-prompt__recents'] });
+  recentSection.append(recentLabel, recentList);
+
+  const inputSection = createElement('div', { classNames: ['chrome-ai-prompt__section'] });
+  const inputLabel = createElement('div', { classNames: ['chrome-ai-prompt__label'], textContent: 'Context' });
+  const inputField = createElement('textarea', {
+    classNames: ['chrome-ai-prompt__input'],
+    attributes: { rows: '6', placeholder: 'Use selected text or paste context for the assistant' },
+    textContent: initialInput,
+  });
+  inputField.value = initialInput;
+  inputSection.append(inputLabel, inputField);
+
+  const actions = createElement('div', { classNames: ['chrome-ai-prompt__actions'] });
+  const runButton = createElement('button', {
+    classNames: ['chrome-ai-prompt__primary'],
+    attributes: { type: 'button' },
+    textContent: 'Run prompt',
+  });
+  const insertButton = createElement('button', {
+    classNames: ['chrome-ai-prompt__action'],
+    attributes: { type: 'button' },
+    textContent: 'Insert result',
+  });
+  const copyButton = createElement('button', {
+    classNames: ['chrome-ai-prompt__action'],
+    attributes: { type: 'button' },
+    textContent: 'Copy',
+  });
+  actions.append(runButton, insertButton, copyButton);
+
+  const outputSection = createElement('div', { classNames: ['chrome-ai-prompt__section'] });
+  const outputLabel = createElement('div', { classNames: ['chrome-ai-prompt__label'], textContent: 'Result' });
+  const outputField = createElement('div', {
+    classNames: ['chrome-ai-prompt__output'],
+    attributes: { role: 'status', 'aria-live': 'polite' },
+  });
+  outputSection.append(outputLabel, outputField);
+
+  const status = createElement('div', { classNames: ['chrome-ai-prompt__status'] });
+
+  content.append(templateSection, recentSection, inputSection, actions, outputSection, status);
+  container.appendChild(content);
+
+  return {
+    templateList,
+    recentList,
+    runButton,
+    insertButton,
+    copyButton,
+    inputField,
+    outputField,
     status,
   };
 };
