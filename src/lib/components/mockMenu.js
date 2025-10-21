@@ -5,6 +5,7 @@ import {
   createMenuItemElement,
   createSummaryView,
   createTranslationView,
+  createRewriteView,
   createChatView,
   showSummaryLoading,
   showTranslationLoading,
@@ -29,7 +30,9 @@ export class MockMenu {
     this._selectHandler = null;
     this._clickHandler = null;
     this._keydownHandler = null;
-    this._chatView = null; // Store chat view reference
+    this._chatView = null;
+    this._rewriteView = null;
+    this._rewriteHandlers = { rewrite: null, use: null, copy: null };
     
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this.container = buildMenuElement(createElement, this.items);
@@ -94,6 +97,7 @@ export class MockMenu {
     
     // Clean up existing event listeners before clearing
     this._cleanupEventListeners();
+    this.#cleanupRewriteView();
     
     // Clear and rebuild the menu IN-PLACE (avoid nesting a new container)
     // Previously we appended a fresh .chrome-ai-mock-menu element inside the
@@ -113,6 +117,7 @@ export class MockMenu {
 
   /** Show summary view with back navigation */
   showSummaryView(text = '') {
+    this.#cleanupRewriteView();
     this.currentView = 'summary';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     createSummaryView(createElement, this.container, text, () => this.showMenu());
@@ -120,6 +125,7 @@ export class MockMenu {
 
   /** Show translation view with back navigation */
   showTranslationView(languages = [], onTranslate) {
+    this.#cleanupRewriteView();
     this.currentView = 'translation';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     createTranslationView(createElement, this.container, languages, () => this.showMenu(), onTranslate);
@@ -180,9 +186,163 @@ export class MockMenu {
 
   /** Show chat view */
   showChatView(onSendMessage) {
+    this.#cleanupRewriteView();
     this.currentView = 'chat';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this._chatView = createChatView(createElement, this.container, () => this.showMenu(), onSendMessage);
+  }
+
+  #cleanupRewriteView() {
+    if (!this._rewriteView) return;
+    const { rewriteButton, useButton, copyButton } = this._rewriteView;
+    if (rewriteButton && this._rewriteHandlers.rewrite) {
+      rewriteButton.removeEventListener('click', this._rewriteHandlers.rewrite);
+    }
+    if (useButton && this._rewriteHandlers.use) {
+      useButton.removeEventListener('click', this._rewriteHandlers.use);
+    }
+    if (copyButton && this._rewriteHandlers.copy) {
+      copyButton.removeEventListener('click', this._rewriteHandlers.copy);
+    }
+    this._rewriteView = null;
+    this._rewriteHandlers = { rewrite: null, use: null, copy: null };
+  }
+
+  showRewriteView({ initialText = '', onRewrite, onUseResult, onCopyResult, quickActions = [] } = {}) {
+    this.#cleanupRewriteView();
+    this.currentView = 'rewrite';
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const view = createRewriteView(createElement, this.container, { initialText, onBack: () => this.showMenu() });
+    this._rewriteView = view;
+
+    const handleRewrite = (event) => {
+      event.preventDefault();
+      if (typeof onRewrite === 'function') {
+        onRewrite({
+          text: String(view.inputField.value ?? ''),
+          tone: view.toneSelect.value,
+          length: view.lengthSelect.value,
+          context: String(view.contextField.value ?? ''),
+        });
+      }
+    };
+    view.rewriteButton.addEventListener('click', handleRewrite);
+    this._rewriteHandlers.rewrite = handleRewrite;
+
+    const handleUse = (event) => {
+      event.preventDefault();
+      if (typeof onUseResult === 'function') {
+        onUseResult(String(view.outputField.textContent ?? ''));
+      }
+    };
+    view.useButton.addEventListener('click', handleUse);
+    this._rewriteHandlers.use = handleUse;
+
+    const handleCopy = (event) => {
+      event.preventDefault();
+      if (typeof onCopyResult === 'function') {
+        onCopyResult(String(view.outputField.textContent ?? ''));
+      }
+    };
+    view.copyButton.addEventListener('click', handleCopy);
+    this._rewriteHandlers.copy = handleCopy;
+
+    this.setRewriteQuickActions(quickActions);
+  }
+
+  setRewriteQuickActions(actions = []) {
+    if (!this._rewriteView) return;
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const { quickActions, toneSelect, lengthSelect, contextField, rewriteButton } = this._rewriteView;
+    quickActions.innerHTML = '';
+    if (!Array.isArray(actions) || actions.length === 0) {
+      quickActions.classList.add('chrome-ai-rewrite__quick-actions--hidden');
+      return;
+    }
+    quickActions.classList.remove('chrome-ai-rewrite__quick-actions--hidden');
+    actions.forEach((action) => {
+      const label = action?.label || 'Apply';
+      const button = createElement('button', {
+        classNames: ['chrome-ai-rewrite__quick-action'],
+        attributes: { type: 'button' },
+        textContent: label,
+      });
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (action.tone) toneSelect.value = action.tone;
+        if (action.length) lengthSelect.value = action.length;
+        if (typeof action.context === 'string') contextField.value = action.context;
+        if (typeof action.onApply === 'function') {
+          action.onApply(this);
+        }
+        if (action.autoRun && typeof this._rewriteHandlers.rewrite === 'function') {
+          this._rewriteHandlers.rewrite(new Event('click'));
+        }
+      });
+      quickActions.appendChild(button);
+    });
+  }
+
+  setRewriteStatus(message = '', variant = 'info') {
+    if (!this._rewriteView) return;
+    const { status } = this._rewriteView;
+    status.textContent = message;
+    status.className = 'chrome-ai-rewrite__status';
+    if (message) {
+      status.classList.add(`chrome-ai-rewrite__status--${variant}`);
+    }
+  }
+
+  showRewriteLoading(label) {
+    if (!this._rewriteView) return;
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    const { outputField } = this._rewriteView;
+    outputField.classList.add('loading');
+    outputField.innerHTML = '';
+    const spinner = createElement('span', { classNames: ['chrome-ai-spinner'], attributes: { 'aria-hidden': 'true' } });
+    const text = createElement('span', { classNames: ['chrome-ai-spinner__label'], textContent: label });
+    outputField.append(spinner, text);
+  }
+
+  clearRewriteOutput() {
+    if (!this._rewriteView) return;
+    const { outputField } = this._rewriteView;
+    outputField.classList.remove('loading');
+    outputField.innerHTML = '';
+  }
+
+  setRewriteResult(text) {
+    if (!this._rewriteView) return;
+    const { outputField } = this._rewriteView;
+    outputField.classList.remove('loading');
+    outputField.textContent = text;
+  }
+
+  setRewriteButtonState(disabled) {
+    if (!this._rewriteView) return;
+    const { rewriteButton } = this._rewriteView;
+    rewriteButton.disabled = disabled;
+    rewriteButton.textContent = disabled ? 'Rewriting…' : 'Rewrite';
+  }
+
+  focusRewriteInput() {
+    if (!this._rewriteView) return;
+    this._rewriteView.inputField.focus();
+  }
+
+  setRewriteInputText(text) {
+    if (!this._rewriteView) return;
+    this._rewriteView.inputField.value = text;
+  }
+
+  getRewriteInputText() {
+    if (!this._rewriteView) return '';
+    return String(this._rewriteView.inputField.value ?? '');
+  }
+
+  getRewriteResultText() {
+    if (!this._rewriteView) return '';
+    return String(this._rewriteView.outputField.textContent ?? '');
   }
 
   /** Add message to chat */

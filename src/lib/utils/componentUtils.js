@@ -28,7 +28,8 @@ export const createMenuItemElement = (createElement, item) => {
   const iconMap = {
     'summary': 'file-lines',
     'chat': 'chat',
-    'translate': 'language'
+    'translate': 'language',
+    'rewrite': 'sparkles'
   };
 
   const iconType = iconMap[item.id] || 'circle';
@@ -94,6 +95,113 @@ export const buildMenuElement = (createElement, menuItems) => {
   menuItems.forEach((item) => list.appendChild(createMenuItemElement(createElement, item)));
   container.append(header, list);
   return container;
+};
+
+export const createRewriteView = (createElement, container, { initialText = '', onBack }) => {
+  container.innerHTML = '';
+
+  const header = createBackHeader(createElement, 'Improve Writing', onBack);
+  container.appendChild(header);
+
+  const content = createElement('div', { classNames: ['chrome-ai-mock-menu__content', 'chrome-ai-rewrite'] });
+
+  const controls = createElement('div', { classNames: ['chrome-ai-rewrite__controls'] });
+  const toneSelect = createElement('select', { classNames: ['chrome-ai-rewrite__select'], attributes: { 'aria-label': 'Tone' } });
+  [['as-is', 'Tone: As-is'], ['more-formal', 'Tone: More formal'], ['more-casual', 'Tone: More casual']].forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    toneSelect.appendChild(option);
+  });
+  const lengthSelect = createElement('select', { classNames: ['chrome-ai-rewrite__select'], attributes: { 'aria-label': 'Length' } });
+  [['as-is', 'Length: As-is'], ['shorter', 'Length: Shorter'], ['longer', 'Length: Longer']].forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    lengthSelect.appendChild(option);
+  });
+  const rewriteButton = createElement('button', {
+    classNames: ['chrome-ai-rewrite__primary'],
+    attributes: { type: 'button' },
+    textContent: 'Rewrite',
+  });
+  const toneWrapper = createElement('div', { classNames: ['chrome-ai-rewrite__control'] });
+  toneWrapper.append(
+    createElement('span', { classNames: ['chrome-ai-rewrite__control-label'], textContent: 'Tone' }),
+    toneSelect,
+  );
+
+  const lengthWrapper = createElement('div', { classNames: ['chrome-ai-rewrite__control'] });
+  lengthWrapper.append(
+    createElement('span', { classNames: ['chrome-ai-rewrite__control-label'], textContent: 'Length' }),
+    lengthSelect,
+  );
+
+  controls.append(toneWrapper, lengthWrapper, rewriteButton);
+
+  const quickLabel = createElement('div', { classNames: ['chrome-ai-rewrite__section-heading'], textContent: 'Quick adjustments' });
+  const quickActions = createElement('div', { classNames: ['chrome-ai-rewrite__quick-actions'] });
+
+  const grid = createElement('div', { classNames: ['chrome-ai-rewrite__grid'] });
+
+  const inputSection = createElement('div', { classNames: ['chrome-ai-rewrite__section'] });
+  const inputLabel = createElement('div', { classNames: ['chrome-ai-rewrite__label'], textContent: 'Original text' });
+  const inputField = createElement('textarea', {
+    classNames: ['chrome-ai-rewrite__input'],
+    attributes: { rows: '6', placeholder: 'Paste or select text to improve' },
+    textContent: initialText,
+  });
+  inputField.value = initialText;
+  inputSection.append(inputLabel, inputField);
+
+  const contextSection = createElement('div', { classNames: ['chrome-ai-rewrite__section'] });
+  const contextLabel = createElement('div', { classNames: ['chrome-ai-rewrite__label'], textContent: 'Optional guidance' });
+  const contextField = createElement('textarea', {
+    classNames: ['chrome-ai-rewrite__context'],
+    attributes: { rows: '3', placeholder: 'Add instructions for tone, audience, or purpose' },
+  });
+  contextSection.append(contextLabel, contextField);
+
+  const outputSection = createElement('div', { classNames: ['chrome-ai-rewrite__section'] });
+  const outputLabel = createElement('div', { classNames: ['chrome-ai-rewrite__label'], textContent: 'Suggestion' });
+  const outputField = createElement('div', {
+    classNames: ['chrome-ai-rewrite__output'],
+    attributes: { role: 'status', 'aria-live': 'polite' },
+  });
+  const outputActions = createElement('div', { classNames: ['chrome-ai-rewrite__output-actions'] });
+  const useButton = createElement('button', {
+    classNames: ['chrome-ai-rewrite__action'],
+    attributes: { type: 'button' },
+    textContent: 'Use result',
+  });
+  const copyButton = createElement('button', {
+    classNames: ['chrome-ai-rewrite__action'],
+    attributes: { type: 'button' },
+    textContent: 'Copy',
+  });
+  outputActions.append(useButton, copyButton);
+  outputSection.append(outputLabel, outputField, outputActions);
+
+  grid.append(inputSection, contextSection, outputSection);
+
+  const status = createElement('div', { classNames: ['chrome-ai-rewrite__status'] });
+
+  content.append(controls, quickLabel, quickActions, grid, status);
+  container.appendChild(content);
+
+  return {
+    toneSelect,
+    lengthSelect,
+    rewriteButton,
+    quickActions,
+    quickLabel,
+    inputField,
+    contextField,
+    outputField,
+    useButton,
+    copyButton,
+    status,
+  };
 };
 
 /**

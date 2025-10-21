@@ -2,6 +2,7 @@ import { createOverlayContainer, isEventOutside } from '../utils/overlayUtils.js
 import { summarizeCurrentPageWithProgress } from '../business/summarizationService.js';
 import { translateCurrentPageWithProgress } from '../business/translationService.js';
 import { sendChatMessageStreaming, getSuggestedQuestions, canChat } from '../business/chatService.js';
+import { rewriteTextWithProgress } from '../business/rewriterService.js';
 import { LANGUAGES } from '../utils/i18nUtils.js';
 
 /** Orchestrates FAB + menu mounting and interactions. */
@@ -144,6 +145,115 @@ export class OverlayController {
         this.menu.addChatMessage('assistant', message);
       }
     }
+    if (id === 'rewrite') {
+      try {
+        const selectedText = this.#getSelectedText() || '';
+        this.menu.showRewriteView({
+          initialText: selectedText,
+          onRewrite: (request) => this.handleRewriteRequest(request),
+          onUseResult: (text) => this.handleRewriteUse(text),
+          onCopyResult: (text) => this.handleRewriteCopy(text),
+          quickActions: this.#getDefaultRewriteQuickActions(),
+        });
+        if (!this.menu.isVisible()) this.menu.show();
+        this.button.setActive(true);
+        this.menu.focusRewriteInput();
+      } catch (e) {
+        this.menu.showMenu();
+      }
+    }
+  }
+
+  #getSelectedText() {
+    try {
+      if (typeof window.getSelection === 'function') {
+        const selection = window.getSelection();
+        const text = selection ? String(selection.toString()) : '';
+        return text.trim();
+      }
+    } catch {}
+    return '';
+  }
+
+  #getDefaultRewriteQuickActions() {
+    return [
+      { label: 'Shorten', length: 'shorter', autoRun: false },
+      { label: 'Make formal', tone: 'more-formal', autoRun: false },
+      { label: 'Make casual', tone: 'more-casual', autoRun: false },
+    ];
+  }
+
+  async handleRewriteRequest({ text, tone, length, context }) {
+    try {
+      const trimmedText = String(text ?? '').trim();
+      if (!trimmedText) {
+        this.menu.setRewriteStatus('Enter text to improve.', 'error');
+        return;
+      }
+
+      this.menu.setRewriteStatus('Preparing model…');
+      this.menu.setRewriteButtonState(true);
+      this.menu.showRewriteLoading('Rewriting…');
+
+      const result = await rewriteTextWithProgress(
+        trimmedText,
+        { tone, length, context, format: 'markdown' },
+        (phase) => {
+          if (phase === 'download_start') this.menu.setRewriteStatus('Downloading model…');
+          if (phase === 'download_complete') this.menu.setRewriteStatus('Model ready. Generating…');
+          if (phase === 'inference_start') this.menu.setRewriteStatus('Generating rewrite…');
+          if (phase === 'inference_complete') this.menu.setRewriteStatus('Rewrite ready!', 'success');
+        }
+      );
+
+      this.menu.setRewriteResult(result);
+    } catch (e) {
+      const code = e && e.code;
+      let message = 'Unable to rewrite text.';
+      if (code === 'ai-unavailable') message = 'AI rewriting is not available in this Chrome build.';
+      else if (code === 'no-content') message = 'Enter text to improve first.';
+      else if (code === 'empty-rewrite') message = 'The model returned an empty suggestion.';
+      else if (code === 'inference-failed') message = 'AI rewriting failed. Please try again.';
+      this.menu.setRewriteStatus(message, 'error');
+      this.menu.clearRewriteOutput();
+    } finally {
+      this.menu.setRewriteButtonState(false);
+    }
+  }
+
+  handleRewriteUse(text) {
+    if (!text) {
+      this.menu.setRewriteStatus('No suggestion to use yet.', 'error');
+      return;
+    }
+    try {
+      const selection = window.getSelection && window.getSelection();
+      if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(text));
+        selection.removeAllRanges();
+      } else {
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+      this.menu.setRewriteStatus('Suggestion inserted.', 'success');
+    } catch (e) {
+      this.menu.setRewriteStatus('Could not insert text automatically.', 'error');
+    }
+  }
+
+  handleRewriteCopy(text) {
+    if (!text) {
+      this.menu.setRewriteStatus('Nothing to copy yet.', 'error');
+      return;
+    }
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        this.menu.setRewriteStatus('Copied to clipboard.', 'success');
+      })
+      .catch(() => {
+        this.menu.setRewriteStatus('Copy failed. Try selecting manually.', 'error');
+      });
   }
 
   /** Load and display suggested questions in the drawer */
