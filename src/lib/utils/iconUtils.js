@@ -71,6 +71,19 @@ export const createIcon = (iconType, classNames = []) => {
         <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>
       `;
     },
+    'pen-line': () => {
+      // Pen/edit icon for writing
+      svg.innerHTML = `
+        <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 5l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      `;
+    },
+    'zap': () => {
+      // Lightning bolt for quick actions
+      svg.innerHTML = `
+        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      `;
+    },
     'arrow-left': () => {
       svg.innerHTML = `
         <defs>
@@ -109,7 +122,9 @@ export const iconMap = {
   'fa-file-lines': 'file-lines',
   'fa-language': 'language',
   'fa-arrow-left': 'arrow-left',
-  'fa-circle': 'circle'
+  'fa-circle': 'circle',
+  'fa-pen-line': 'pen-line',
+  'fa-zap': 'zap'
 };
 
 /**

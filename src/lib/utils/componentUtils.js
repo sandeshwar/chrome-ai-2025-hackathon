@@ -29,8 +29,8 @@ export const createMenuItemElement = (createElement, item) => {
     'summary': 'file-lines',
     'chat': 'chat',
     'translate': 'language',
-    'rewrite': 'sparkles',
-    'prompt': 'robot'
+    'rewrite': 'pen-line',
+    'prompt': 'zap'
   };
 
   const iconType = iconMap[item.id] || 'circle';
