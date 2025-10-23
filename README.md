@@ -1,7 +1,7 @@
 # Socal Assist - AI-Powered Chrome Extension
 
 [![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue.svg)](https://developer.chrome.com/docs/extensions/mv3/)
-[![Built-in AI](https://img.shields.io/badge/Chrome%20Built--in%20AI-Ready-green.svg)](https://developer.chrome.com/docs/ai/)
+[![Built-in AI](https://img.shields.io/badge/Chrome%20Built--in%20AI-138+-green.svg)](https://developer.chrome.com/docs/ai/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
 > Your universal AI companion for the web. Access powerful AI features like summarization, translation, writing enhancement, and chat directly from any website using Chrome's built-in AI capabilities.
@@ -9,11 +9,11 @@
 ## 🚀 Features
 
 ### 🤖 Core AI Features
-- **📝 Smart Summarization** - Get concise bullet-point summaries of articles and web content instantly
-- **🌐 Seamless Translation** - Translate entire web pages into multiple languages using Chrome's Translator API
-- **✍️ Writing Enhancement** - Improve tone, clarity, and length of selected text with AI-powered rewriting
-- **💬 AI Chat Interface** - Have conversations with AI about page content or general queries
-- **⚡ Quick Prompts** - Access templated AI actions for common tasks like explaining complex topics
+- **📝 Smart Summarization** - Get concise bullet-point summaries of articles and web content instantly *(Stable API)*
+- **🌐 Seamless Translation** - Translate entire web pages into multiple languages using Chrome's Translator API *(Stable API)*
+- **✍️ Writing Enhancement** - Improve tone, clarity, and length of selected text with AI-powered rewriting *(Origin Trial)*
+- **💬 AI Chat Interface** - Have conversations with AI about page content or general queries *(Origin Trial)*
+- **⚡ Quick Prompts** - Access templated AI actions for common tasks like explaining complex topics *(Origin Trial)*
 
 ### 🎨 User Experience
 - **Clean, Modern UI** - Intuitive floating action button with responsive design
@@ -122,84 +122,91 @@ manifest.json         # Extension configuration
 
 ### Prerequisites
 - **Node.js** 16+ (for development tools)
-- **Chrome** 120+ (for testing)
-- **Chrome AI APIs** enabled (see Chrome Flags section below)
+- **Chrome** 138+ (for testing built-in AI APIs)
+- **Chrome AI APIs** enabled (stable APIs work out of the box in Chrome 138+)
 
-### Chrome Flags Setup
+### Chrome AI APIs Setup
 
-**Important:** Socal Assist requires Chrome's built-in AI features to be enabled via Chrome flags. Here's how to enable them:
+**Important:** Socal Assist uses Chrome's built-in AI APIs. Here's the current status and setup:
 
-#### Step-by-Step Flag Configuration
+#### Available APIs (Chrome 138+)
 
-1. **Open Chrome Flags**
-   ```
-   Navigate to: chrome://flags/
-   ```
+**✅ Stable APIs** (no setup required):
+- **Translator API** - Available from Chrome 138 stable
+- **Language Detector API** - Available from Chrome 138 stable
+- **Summarizer API** - Available from Chrome 138 stable
 
-2. **Enable Required AI Flags**
-   Search for and enable these flags:
+**🔬 Origin Trial APIs** (require registration):
+- **Writer API** - Requires origin trial registration
+- **Rewriter API** - Requires origin trial registration
+- **Prompt API** - Requires origin trial registration
+- **Proofreader API** - Requires origin trial registration
 
-   - **Prompt API for Gemini Nano** - `chrome://flags/#prompt-api-for-gemini-nano`
-     - Set to: **Enabled**
+#### API Detection and Usage
 
-   - **Summarization API for Chrome** - `chrome://flags/#summarization-api-for-chrome`
-     - Set to: **Enabled**
-
-   - **Translation API for Chrome** - `chrome://flags/#translation-api-for-chrome`
-     - Set to: **Enabled**
-
-   - **Language Detection API** - `chrome://flags/#language-detection-api`
-     - Set to: **Enabled**
-
-   - **Optimization Guide on Device** - `chrome://flags/#optimization-guide-on-device`
-     - Set to: **Enabled**
-
-3. **Restart Chrome**
-   ```
-   Click "Relaunch" button at bottom of flags page
-   ```
-
-4. **Verify AI Availability**
-   - Open Developer Tools (F12)
-   - Go to Console tab
-   - Type: `chrome.ai.summarizer.availability()`
-   - Should return: `{available: "readily"}` or `{available: "after-download"}`
-
-#### Alternative Verification Methods
-
-**Check via Extension:**
-- Install and load Socal Assist
-- Visit any webpage
-- Click the floating action button
-- If AI features work → flags are properly configured
-- If you see "AI unavailable" → check flag settings
-
-**Manual API Check:**
+**Check API availability:**
 ```javascript
-// In Chrome DevTools Console
-// Check Summarizer API
-console.log(await chrome.ai.summarizer.availability());
+// Summarizer API
+if ('Summarizer' in self) {
+  console.log('Summarizer API is supported');
+}
 
-// Check Translator API
-console.log(await chrome.ai.translator.availability({from: 'en', to: 'es'}));
+// Translator API
+if ('Translator' in self) {
+  console.log('Translator API is supported');
+}
 
-// Check Language Detector API
-console.log(await chrome.ai.languageDetector.availability());
+// Language Detector API
+if ('LanguageDetector' in self) {
+  console.log('Language Detector API is supported');
+}
 ```
+
+**Check API capabilities:**
+```javascript
+// Check Summarizer availability
+const summarizerAvailability = await Summarizer.availability();
+console.log('Summarizer:', summarizerAvailability);
+
+// Check Translator availability
+const translatorAvailability = await Translator.availability({
+  sourceLanguage: 'en',
+  targetLanguage: 'es'
+});
+console.log('Translator:', translatorAvailability);
+
+// Check Language Detector availability
+const detectorAvailability = await LanguageDetector.availability();
+console.log('Language Detector:', detectorAvailability);
+```
+
+#### Origin Trial Registration (For Advanced Features)
+
+For Writer, Rewriter, Prompt, and Proofreader APIs:
+
+1. **Register for origin trials** at [developer.chrome.com/origintrials](https://developer.chrome.com/origintrials/)
+2. **Add origin trial tokens** to your extension's manifest:
+   ```json
+   {
+     "manifest_version": 3,
+     "name": "Socal Assist",
+     "trial_tokens": ["your-origin-trial-token-here"]
+   }
+   ```
 
 #### Troubleshooting
 
 **If AI features don't work:**
-- ✅ Verify all flags are set to "Enabled"
-- ✅ Restart Chrome completely (not just refresh)
-- ✅ Check you're on Chrome 120+ version
-- ✅ Ensure no other extensions are conflicting
+- ✅ Verify you're using Chrome 138+ (check `chrome://version/`)
+- ✅ Check API availability using the detection code above
+- ✅ For origin trial APIs, ensure proper registration and tokens
 - ✅ Try in Incognito mode to test
+- ✅ Check for error messages in DevTools console
 
 **Common Issues:**
-- **"AI unavailable"** → Flags not enabled or Chrome restart needed
+- **"API not available"** → Update to Chrome 138+ or check API detection
 - **"Model download required"** → Wait for AI models to download (can take a few minutes)
-- **"Network error"** → Check internet connection for model downloads
+- **"Origin trial required"** → Register for origin trials for advanced APIs
 
 ### Setup
 ```bash
@@ -231,20 +238,23 @@ zip -r socal-assist.zip . -x "node_modules/*" ".git/*"
 
 ## 🔧 Configuration
 
-The extension uses Chrome's built-in AI APIs which are enabled by default in Chrome 120+. No additional configuration is required for end users.
+The extension uses Chrome's built-in AI APIs which are enabled by default in Chrome 138+. No additional configuration is required for end users.
 
 ### Advanced Configuration
 - **AI Model Settings** - Temperature, context length via API parameters
 - **Theme Customization** - CSS custom properties for theming
 - **Feature Toggles** - Individual feature enable/disable options
+- **Origin Trial Registration** - Required for Writer, Rewriter, Prompt, and Proofreader APIs
 
 ## 🌐 Browser Compatibility
 
-- ✅ **Chrome** 120+ (Primary)
-- ✅ **Edge** 120+ (Chromium-based)
-- ✅ **Opera** 100+ (Chromium-based)
-- ❌ **Firefox** (Not supported - no Manifest V3 AI APIs)
+- ✅ **Chrome** 138+ (Primary) - Full support for all built-in AI APIs
+- ✅ **Edge** 138+ (Chromium-based) - Full support for all built-in AI APIs
+- ✅ **Opera** 107+ (Chromium-based) - Full support for all built-in AI APIs
+- ❌ **Firefox** (Not supported - no built-in AI APIs)
 - ❌ **Safari** (Not supported - different extension format)
+
+**Note:** Built-in AI APIs are only available in Chromium-based browsers from version 138 onwards.
 
 ## 📝 Contributing
 
