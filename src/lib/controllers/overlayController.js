@@ -4,6 +4,7 @@ import { translateCurrentPageWithProgress } from '../business/translationService
 import { sendChatMessageStreaming, getSuggestedQuestions, canChat } from '../business/chatService.js';
 import { rewriteTextWithProgress } from '../business/rewriterService.js';
 import { getDefaultPrompts, getRecentPrompts, addRecentPromptUsage, sendPrompt } from '../business/promptService.js';
+import { analyzeImage, getImageAnalysisSuggestions, canAnalyzeImage } from '../business/imageAnalysisService.js';
 import { LANGUAGES } from '../utils/i18nUtils.js';
 
 /** Orchestrates FAB + menu mounting and interactions. */
@@ -182,6 +183,26 @@ export class OverlayController {
         this.menu.focusPromptInput();
         if (selectedText) this.menu.setPromptStatus('Loaded selected text into context.', 'info');
       } catch (e) {
+        this.menu.showMenu();
+      }
+    }
+    if (id === 'image') {
+      try {
+        // Navigate to image analysis view
+        this.menu.showImageView({
+          onAnalyzeImage: (file, query) => this.handleImageAnalysis(file, query),
+        });
+        
+        if (!this.menu.isVisible()) this.menu.show();
+        this.button.setActive(true);
+        
+        // Set suggested questions
+        const suggestions = getImageAnalysisSuggestions();
+        this.menu.setImageSuggestions(suggestions);
+      } catch (e) {
+        let message = 'Unable to open image analysis.';
+        const code = e && e.code;
+        if (code === 'ai-unavailable') message = 'AI image analysis is not available in this Chrome build.';
         this.menu.showMenu();
       }
     }
@@ -503,6 +524,35 @@ export class OverlayController {
   #attachEvents() {
     this.button.onClick(this.handleToggle);
     document.addEventListener('click', this.handleOutsideClick, true);
+  }
+
+  async handleImageAnalysis(file, query) {
+    try {
+      this.menu.setImageAnalysisLoading('Analyzing image…');
+      
+      const result = await analyzeImage(file, query, (phase) => {
+        if (phase === 'generation_start') {
+          this.menu.setImageAnalysisLoading('Processing image…');
+        }
+      });
+      
+      this.menu.setImageAnalysisResult(result);
+    } catch (e) {
+      let errorMessage = 'Unable to analyze this image.';
+      const code = e && e.code;
+      
+      if (code === 'ai-unavailable') {
+        errorMessage = 'AI image analysis is not available in this Chrome build.';
+      } else if (e.message.includes('size')) {
+        errorMessage = 'Image size must be less than 10MB.';
+      } else if (e.message.includes('type')) {
+        errorMessage = 'Only JPEG, PNG, GIF, and WebP images are supported.';
+      } else if (code === 'inference-failed') {
+        errorMessage = 'AI image analysis failed. Please try again.';
+      }
+      
+      this.menu.setImageAnalysisResult(errorMessage);
+    }
   }
 
   #detachEvents() {

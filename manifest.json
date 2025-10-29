@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Chrome AI FAB Overlay",
+  "name": "Socal Assist",
   "description": "Overlay a floating action button that opens a mock AI assistant menu on every website.",
   "version": "1.0.0",
   "icons": {
@@ -15,7 +15,7 @@
       "16": "icons/icon16.png",
       "32": "icons/icon32.png"
     },
-    "default_title": "Chrome AI FAB Overlay"
+    "default_title": "Socal Assist"
   },
   "background": {
     "service_worker": "src/background/service-worker.js",

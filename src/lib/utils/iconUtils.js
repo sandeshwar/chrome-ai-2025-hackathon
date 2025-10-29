@@ -93,8 +93,7 @@ export const createIcon = (iconType, classNames = []) => {
           </linearGradient>
         </defs>
         <circle cx="12" cy="12" r="10" fill="url(#${gradientId})" opacity="0.05"/>
-        <path d="M20 12H8" stroke="url(#${gradientId})" stroke-width="2" stroke-linecap="round"/>
-        <path d="M12 16l-4-4 4-4" stroke="url(#${gradientId})" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 18l-6-6 6-6" stroke="url(#${gradientId})" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       `;
     },
     'circle': () => {

@@ -30,7 +30,8 @@ export const createMenuItemElement = (createElement, item) => {
     'chat': 'chat',
     'translate': 'language',
     'rewrite': 'pen-line',
-    'prompt': 'zap'
+    'prompt': 'zap',
+    'image': 'image'
   };
 
   const iconType = iconMap[item.id] || 'circle';
@@ -765,6 +766,292 @@ export const createChatView = (createElement, container, onBack, onSendMessage) 
       } else {
         sendButton.textContent = 'Send';
       }
+    }
+  };
+};
+
+/**
+ * Create image analysis view
+ * @param {(tag:string, opts?: any)=>HTMLElement} createElement
+ * @param {HTMLElement} container
+ * @param {{onBack:Function, onAnalyzeImage:Function}} params
+ * @returns {Object}
+ */
+export const createImageView = (createElement, container, { onBack, onAnalyzeImage }) => {
+  container.innerHTML = '';
+  container.className = 'chrome-ai-mock-menu chrome-ai-mock-menu--visible';
+  
+  // Create back header
+  const header = createBackHeader(createElement, 'Image Analysis', onBack);
+  
+  // Create main container
+  const imageContainer = createElement('div', { 
+    classNames: ['chrome-ai-image-container'] 
+  });
+  
+  // Upload area
+  const uploadArea = createElement('div', { 
+    classNames: ['chrome-ai-image-upload-area'] 
+  });
+  
+  const uploadLabel = createElement('label', {
+    classNames: ['chrome-ai-image-upload-label'],
+    attributes: { for: 'chrome-ai-image-input' }
+  });
+  
+  const uploadIcon = createIcon('upload');
+  const uploadText = createElement('span', { 
+    classNames: ['chrome-ai-image-upload-text'],
+    textContent: 'Click to upload or drag and drop'
+  });
+  
+  const uploadSubtext = createElement('span', { 
+    classNames: ['chrome-ai-image-upload-subtext'],
+    textContent: 'JPEG, PNG, GIF, WebP (max 10MB)'
+  });
+  
+  const fileInput = createElement('input', {
+    classNames: ['chrome-ai-image-input'],
+    attributes: { 
+      type: 'file',
+      id: 'chrome-ai-image-input',
+      accept: 'image/jpeg,image/jpg,image/png,image/gif,image/webp'
+    }
+  });
+  
+  uploadLabel.append(uploadIcon, uploadText, uploadSubtext);
+  uploadArea.append(uploadLabel, fileInput);
+  
+  // Preview area (initially hidden)
+  const previewArea = createElement('div', { 
+    classNames: ['chrome-ai-image-preview-area', 'chrome-ai-image-preview-area--hidden'] 
+  });
+  
+  const previewContainer = createElement('div', { 
+    classNames: ['chrome-ai-image-preview-container'] 
+  });
+  
+  const previewImage = createElement('img', {
+    classNames: ['chrome-ai-image-preview'],
+    attributes: { alt: 'Uploaded image preview' }
+  });
+  
+  const imageInfo = createElement('div', { 
+    classNames: ['chrome-ai-image-info'] 
+  });
+  
+  const imageFileName = createElement('div', { 
+    classNames: ['chrome-ai-image-filename'] 
+  });
+  
+  const imageFileSize = createElement('div', { 
+    classNames: ['chrome-ai-image-filesize'] 
+  });
+  
+  const removeImageBtn = createElement('button', {
+    classNames: ['chrome-ai-image-remove-btn'],
+    attributes: { type: 'button', 'aria-label': 'Remove image' },
+    textContent: 'Remove'
+  });
+  
+  imageInfo.append(imageFileName, imageFileSize);
+  previewContainer.append(previewImage, imageInfo, removeImageBtn);
+  previewArea.appendChild(previewContainer);
+  
+  // Query input area
+  const queryArea = createElement('div', { 
+    classNames: ['chrome-ai-image-query-area'] 
+  });
+  
+  const queryLabel = createElement('label', { 
+    classNames: ['chrome-ai-image-query-label'],
+    textContent: 'What would you like to know about this image?'
+  });
+  
+  const queryInput = createElement('textarea', {
+    classNames: ['chrome-ai-image-query-input'],
+    attributes: { 
+      placeholder: 'e.g., "Describe what you see", "What text is in this image?", "What is the setting?"',
+      rows: '2'
+    }
+  });
+  
+  const suggestionsArea = createElement('div', { 
+    classNames: ['chrome-ai-image-suggestions'] 
+  });
+  
+  const suggestionsTitle = createElement('div', { 
+    classNames: ['chrome-ai-image-suggestions-title'],
+    textContent: 'Suggested questions:'
+  });
+  
+  const suggestionsList = createElement('div', { 
+    classNames: ['chrome-ai-image-suggestions-list'] 
+  });
+  
+  suggestionsArea.append(suggestionsTitle, suggestionsList);
+  
+  // Analyze button
+  const analyzeButton = createElement('button', {
+    classNames: ['chrome-ai-image-analyze-btn'],
+    attributes: { type: 'button', disabled: 'disabled' },
+    textContent: 'Analyze Image'
+  });
+  
+  // Results area
+  const resultsArea = createElement('div', { 
+    classNames: ['chrome-ai-image-results', 'chrome-ai-image-results--hidden'] 
+  });
+  
+  const resultsContent = createElement('div', { 
+    classNames: ['chrome-ai-image-results-content'] 
+  });
+  
+  resultsArea.appendChild(resultsContent);
+  
+  // Assemble the view
+  queryArea.append(queryLabel, queryInput, analyzeButton);
+  imageContainer.append(uploadArea, previewArea, queryArea, resultsArea, suggestionsArea);
+  container.append(header, imageContainer);
+  
+  // Auto-resize textarea
+  queryInput.addEventListener('input', () => {
+    queryInput.style.height = 'auto';
+    queryInput.style.height = Math.min(queryInput.scrollHeight, 80) + 'px';
+  });
+  
+  let currentFile = null;
+  
+  // Handle file selection
+  const handleFileSelect = (file) => {
+    if (!file) return;
+    
+    currentFile = file;
+    
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImage.src = e.target.result;
+      imageFileName.textContent = file.name;
+      imageFileSize.textContent = formatFileSize(file.size);
+      
+      uploadArea.classList.add('chrome-ai-image-upload-area--hidden');
+      previewArea.classList.remove('chrome-ai-image-preview-area--hidden');
+      analyzeButton.disabled = false;
+      
+      queryInput.focus();
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  });
+  
+  // Handle drag and drop
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('chrome-ai-image-upload-area--dragover');
+  });
+  
+  uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('chrome-ai-image-upload-area--dragover');
+  });
+  
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('chrome-ai-image-upload-area--dragover');
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleFileSelect(file);
+    }
+  });
+  
+  // Handle remove image
+  removeImageBtn.addEventListener('click', () => {
+    currentFile = null;
+    fileInput.value = '';
+    previewImage.src = '';
+    
+    uploadArea.classList.remove('chrome-ai-image-upload-area--hidden');
+    previewArea.classList.add('chrome-ai-image-preview-area--hidden');
+    analyzeButton.disabled = true;
+    resultsArea.classList.add('chrome-ai-image-results--hidden');
+  });
+  
+  // Handle analyze button
+  analyzeButton.addEventListener('click', () => {
+    if (currentFile && onAnalyzeImage) {
+      const query = queryInput.value.trim();
+      onAnalyzeImage(currentFile, query);
+    }
+  });
+  
+  // Helper function to format file size
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  return {
+    container,
+    uploadArea,
+    previewArea,
+    queryInput,
+    analyzeButton,
+    resultsArea,
+    resultsContent,
+    suggestionsList,
+    currentFile: () => currentFile,
+    setQuery: (text) => { queryInput.value = text; },
+    getQuery: () => queryInput.value.trim(),
+    showUploadArea: () => {
+      uploadArea.classList.remove('chrome-ai-image-upload-area--hidden');
+      previewArea.classList.add('chrome-ai-image-preview-area--hidden');
+    },
+    showPreviewArea: () => {
+      uploadArea.classList.add('chrome-ai-image-upload-area--hidden');
+      previewArea.classList.remove('chrome-ai-image-preview-area--hidden');
+    },
+    showResults: (content) => {
+      resultsArea.classList.remove('chrome-ai-image-results--hidden');
+      if (hasMarkdown(content)) {
+        resultsContent.innerHTML = safeRenderMarkdown(content);
+      } else {
+        resultsContent.textContent = content;
+      }
+    },
+    hideResults: () => {
+      resultsArea.classList.add('chrome-ai-image-results--hidden');
+    },
+    setAnalyzeButtonState: (disabled, text) => {
+      analyzeButton.disabled = disabled;
+      analyzeButton.textContent = text || 'Analyze Image';
+    },
+    setSuggestions: (suggestions) => {
+      suggestionsList.innerHTML = '';
+      suggestions.forEach(suggestion => {
+        const suggestionBtn = createElement('button', {
+          classNames: ['chrome-ai-image-suggestion-btn'],
+          attributes: { type: 'button' },
+          textContent: suggestion
+        });
+        suggestionBtn.addEventListener('click', () => {
+          queryInput.value = suggestion;
+          queryInput.style.height = 'auto';
+          queryInput.style.height = Math.min(queryInput.scrollHeight, 80) + 'px';
+          queryInput.focus();
+        });
+        suggestionsList.appendChild(suggestionBtn);
+      });
     }
   };
 };

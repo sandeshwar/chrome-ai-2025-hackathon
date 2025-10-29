@@ -8,6 +8,7 @@ import {
   createRewriteView,
   createPromptView,
   createChatView,
+  createImageView,
   showSummaryLoading,
   showTranslationLoading,
   updateSummaryView,
@@ -28,7 +29,7 @@ export class MockMenu {
     this.stateCoordinator = stateCoordinator;
     this.items = Array.isArray(items) ? items : [];
     this.visible = false;
-    this.currentView = 'menu'; // 'menu', 'summary', 'translation', 'chat', 'rewrite', 'prompt'
+    this.currentView = 'menu'; // 'menu', 'summary', 'translation', 'chat', 'rewrite', 'prompt', 'image'
     this._selectHandler = null;
     this._clickHandler = null;
     this._keydownHandler = null;
@@ -37,6 +38,8 @@ export class MockMenu {
     this._rewriteHandlers = { rewrite: null, use: null, copy: null };
     this._promptView = null;
     this._promptHandlers = { run: null, runKeydown: null, insert: null, copy: null };
+    this._imageView = null;
+    this._imageHandlers = { analyze: null };
     
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this.container = buildMenuElement(createElement, this.items);
@@ -103,6 +106,7 @@ export class MockMenu {
     this._cleanupEventListeners();
     this.#cleanupRewriteView();
     this.#cleanupPromptView();
+    this.#cleanupImageView();
     
     // Clear and rebuild the menu IN-PLACE (avoid nesting a new container)
     // Previously we appended a fresh .chrome-ai-mock-menu element inside the
@@ -124,6 +128,7 @@ export class MockMenu {
   showSummaryView(text = '') {
     this.#cleanupRewriteView();
     this.#cleanupPromptView();
+    this.#cleanupImageView();
     this.currentView = 'summary';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     createSummaryView(createElement, this.container, text, () => this.showMenu());
@@ -133,6 +138,7 @@ export class MockMenu {
   showTranslationView(languages = [], onTranslate) {
     this.#cleanupRewriteView();
     this.#cleanupPromptView();
+    this.#cleanupImageView();
     this.currentView = 'translation';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     createTranslationView(createElement, this.container, languages, () => this.showMenu(), onTranslate);
@@ -195,6 +201,7 @@ export class MockMenu {
   showChatView(onSendMessage) {
     this.#cleanupRewriteView();
     this.#cleanupPromptView();
+    this.#cleanupImageView();
     this.currentView = 'chat';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     this._chatView = createChatView(createElement, this.container, () => this.showMenu(), onSendMessage);
@@ -219,6 +226,7 @@ export class MockMenu {
   showRewriteView({ initialText = '', onRewrite, onUseResult, onCopyResult, quickActions = [] } = {}) {
     this.#cleanupRewriteView();
     this.#cleanupPromptView();
+    this.#cleanupImageView();
     this.currentView = 'rewrite';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     const view = createRewriteView(createElement, this.container, { initialText, onBack: () => this.showMenu() });
@@ -376,6 +384,7 @@ export class MockMenu {
   showPromptView({ templates = [], recents = [], initialInput = '', onRunPrompt, onInsertResult, onCopyResult } = {}) {
     this.#cleanupPromptView();
     this.#cleanupRewriteView();
+    this.#cleanupImageView();
     this.currentView = 'prompt';
     const createElement = this.domFactory.createElement.bind(this.domFactory);
     const view = createPromptView(createElement, this.container, {
@@ -574,6 +583,85 @@ export class MockMenu {
   getPromptSelectedTemplateId() {
     if (!this._promptView) return null;
     return this._promptView.selectedTemplateId;
+  }
+
+  #cleanupImageView() {
+    if (!this._imageView) return;
+    if (this._imageHandlers.analyze) {
+      // Remove event listeners if needed
+      this._imageHandlers.analyze = null;
+    }
+    this._imageView = null;
+    this._imageHandlers = { analyze: null };
+  }
+
+  /** Show image analysis view */
+  showImageView({ onAnalyzeImage } = {}) {
+    this.#cleanupImageView();
+    this.#cleanupRewriteView();
+    this.#cleanupPromptView();
+    this.currentView = 'image';
+    const createElement = this.domFactory.createElement.bind(this.domFactory);
+    this._imageView = createImageView(createElement, this.container, {
+      onBack: () => this.showMenu(),
+      onAnalyzeImage: (file, query) => {
+        if (typeof onAnalyzeImage === 'function') {
+          onAnalyzeImage(file, query);
+        }
+      }
+    });
+  }
+
+  /** Set image analysis suggestions */
+  setImageSuggestions(suggestions) {
+    if (this._imageView && this.currentView === 'image') {
+      this._imageView.setSuggestions(suggestions);
+    }
+  }
+
+  /** Show image analysis loading state */
+  setImageAnalysisLoading(label) {
+    if (this._imageView && this.currentView === 'image') {
+      this._imageView.setAnalyzeButtonState(true, label || 'Analyzing...');
+    }
+  }
+
+  /** Set image analysis result */
+  setImageAnalysisResult(content) {
+    if (this._imageView && this.currentView === 'image') {
+      this._imageView.setAnalyzeButtonState(false, 'Analyze Image');
+      this._imageView.showResults(content);
+    }
+  }
+
+  /** Hide image analysis results */
+  hideImageAnalysisResults() {
+    if (this._imageView && this.currentView === 'image') {
+      this._imageView.hideResults();
+    }
+  }
+
+  /** Get current image file */
+  getCurrentImageFile() {
+    if (this._imageView && this.currentView === 'image') {
+      return this._imageView.currentFile();
+    }
+    return null;
+  }
+
+  /** Get image query */
+  getImageQuery() {
+    if (this._imageView && this.currentView === 'image') {
+      return this._imageView.getQuery();
+    }
+    return '';
+  }
+
+  /** Set image query */
+  setImageQuery(query) {
+    if (this._imageView && this.currentView === 'image') {
+      this._imageView.setQuery(query);
+    }
   }
 
   /** Add message to chat */
