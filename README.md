@@ -5,7 +5,7 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Your universal AI companion for the web. Access powerful AI features like summarization, translation, writing enhancement, and chat directly from any website using Chrome's built-in AI capabilities.
+> Your universal AI companion for the web. Access powerful AI features like summarization, translation, writing enhancement, chat, and multimodal image analysis directly from any website using Chrome's built-in AI capabilities.
 
 ## 🚀 Features
 
@@ -15,6 +15,7 @@
 - **✍️ Writing Enhancement** - Improve tone, clarity, and length of selected text with AI-powered rewriting *(Origin Trial)*
 - **💬 AI Chat Interface** - Have conversations with AI about page content or general queries *(Origin Trial)*
 - **⚡ Quick Prompts** - Access templated AI actions for common tasks like explaining complex topics *(Origin Trial)*
+- **🖼️ Multimodal Input Support** - Analyze images with AI-powered visual understanding and question answering *(Origin Trial)*
 
 ### 🎨 User Experience
 - **Clean, Modern UI** - Intuitive floating action button with responsive design
@@ -78,6 +79,16 @@
   - Generate ideas
   - Analyze content
   - Rewrite sections
+
+#### Image Analysis (Multimodal AI)
+- Click FAB → Select "Analyze Image"
+- Upload an image (JPEG, PNG, GIF, WebP up to 10MB)
+- Ask questions about the image content:
+  - "What can you tell me about this image?"
+  - "Describe the main elements in this photo"
+  - "What text is visible in this image?"
+- Get AI-powered visual understanding and detailed responses
+- Use suggested questions for follow-up analysis
 
 ## 📸 Screenshots
 
