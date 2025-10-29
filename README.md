@@ -3,6 +3,7 @@
 [![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue.svg)](https://developer.chrome.com/docs/extensions/mv3/)
 [![Built-in AI](https://img.shields.io/badge/Chrome%20Built--in%20AI-138+-green.svg)](https://developer.chrome.com/docs/ai/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > Your universal AI companion for the web. Access powerful AI features like summarization, translation, writing enhancement, and chat directly from any website using Chrome's built-in AI capabilities.
 
